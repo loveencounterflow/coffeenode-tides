@@ -61,7 +61,7 @@ the License of this product to become valid.
 
 > In case you don't believe me, you will perhaps believe Rijkswaterstaat, the world's leading agency on
 > coastal protection. These guys have managed to keep the Netherlands dry for several hundred years, so they
-> probably know what they're talking about when it comes to estimating the value tidal predictions:
+> probably know what they're talking about when it comes to estimating the value of tidal predictions:
 
 Please note that **this Tical Calender can not and does not display *actual* water levels**; all it does
 is to *attempt* and deliver tidal predictions that enthusiasts may find interesting. **Any data given here
