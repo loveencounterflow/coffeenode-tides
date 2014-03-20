@@ -89,7 +89,7 @@ in de getoonde verwachtingen.
 > they're talking about:
 
 
-**NOT FOR NAVIGATION**
+-> **NOT FOR NAVIGATION** <-
 
 This program is distributed in the hope that it will be useful, but **WITHOUT ANY WARRANTY; without even the
 implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE**.  The author assumes no liability
