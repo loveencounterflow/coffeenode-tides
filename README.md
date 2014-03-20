@@ -59,7 +59,7 @@ the License of this product to become valid.
 
 #### Disclaimer for CoffeeNode Tides
 
-> In case you don't believe me, you will perhaps consider Rijkswaterstaat, the world's leading agency on
+> In case you don't believe me, you will perhaps believe Rijkswaterstaat, the world's leading agency on
 > coastal protection. These guys have managed to keep the Netherlands dry for several hundred years, so they
 > probably know what they're talking about when it comes to estimating the value tidal predictions:
 
