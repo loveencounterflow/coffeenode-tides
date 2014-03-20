@@ -2,6 +2,6 @@
 
 ## CoffeeNode Tides
 
-art/Screen Shot 2014-03-20 at 20.47.55.png
+![](./master/art/Screen%20Shot%202014-03-20%20at%2020.47.55.png)
 
 
