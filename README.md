@@ -88,7 +88,6 @@ in de getoonde verwachtingen.
 > If Rijkswaterstaat is not nerdy enough for you, XTide certainly is. Again, from someone who knows what
 > they're talking about:
 
-> from http://www.flaterco.com/xtide/disclaimer.html
 
 **NOT FOR NAVIGATION**
 
@@ -106,4 +105,10 @@ For details, see the appended GNU General Public License.
 
 XTide's predictions do not incorporate the effects of tropical storms, El Niño, seismic events, subsidence,
 uplift, or changes in global sea level.
+
+> from http://www.flaterco.com/xtide/disclaimer.html
+
+
+
+
 
