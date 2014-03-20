@@ -24,21 +24,35 @@ You'll immediately notice some flaws here:
 
 * There is no column and page breaking implemented as yet, so the table will just run off the page.
 
-* I plan to include curves to visualize tidal levels; i already have this output:
+* I plan to include curves to visualize tidal levels; i already have this output (which is planned to appear
+  to the right of the times columns):
 
   <img src='https://github.com/loveencounterflow/coffeenode-tides/raw/master/art/Screen%20Shot%202014-03-20%20at%2021.40.43.png' width=100px>
 
-  The left line symbolizes the height of the high water, the right one symbolizes the height of the low water
+  The left line symbolizes the heights of the high water, the right one the heights of the low water
   point. I hope i got the figures right. Maybe i add another line in the middle that shows the actual water
-  level at all times. You can see how tides do not only change the water levels as such, but also cause
+  level at all times.
+
+  Incidentally, you can see how tides do not only change the water levels as such, but also cause
   a similar change in the minima and maxima of the level—in other words, its a wave within a wave within
-  wave, from maybe centennial trends down to tides proper and then on to waves big and small down to tiny
-  ripples on the water's surface. That's truly turtles all the way down, and very amazing.
+  wave, from maybe centennial trends down to tides proper and then on to waves big and small and again on to tiny
+  ripples on the water's surface. That's truly turtles all the way down, and very amazing. It may also be
+  interesting and helpful for people using the calender.
 
   While this output does not look so grand when seen in isolation, i want to add a grid for height
   orientation with references to Normaal Amsterdams Peil (NAP, Amsterdam Ordnance Datum) and Lowest
   Astronomical Tide (LAT) as well as horizontal lines to link to the respective time.
 
   Currently i use the [`hobby`](http://ftp.uni-erlangen.de/mirrors/CTAN/graphics/pgf/contrib/hobby/hobby_doc.pdf)
-  package to draw the curves; it is reasonably simple to use, but it takes a considerable time to get each
+  package to draw the curves; it is reasonably simple to use, but takes a considerable time to get each
   curve drawn, so maybe i'll look for a way to do this outside of TeX.
+
+### Disclaimer
+
+Please note that **this Tical Calender can not and does not display *actual* water levels**; all it does
+is to attempt to deliver
+
+Gebruik van de informatie op deze data is voor eigen risico. De getoonde gegevens zijn gebaseerd op de best
+beschikbare kennis en informatie van Rijkswaterstaat. Desondanks kunnen de werkelijke gegevens door
+verschillende oorzaken afwijken van de hier getoonde actuele gegevens. Een afwijking kan bijvoorbeeld zitten
+in de getoonde verwachtingen.
