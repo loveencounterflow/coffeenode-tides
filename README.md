@@ -59,11 +59,7 @@ the License of this product to become valid.
 
 #### Disclaimer for CoffeeNode Tides
 
-> In case you don't believe me, you will perhaps believe Rijkswaterstaat, the world's leading agency on
-> coastal protection. These guys have managed to keep the Netherlands dry for several hundred years, so they
-> probably know what they're talking about when it comes to estimating the value of tidal predictions:
-
-Please note that **this Tical Calender can not and does not display *actual* water levels**; all it does
+Please note that **this Tidal Calender can not, does not, and will not display *actual* water levels**; all it does
 is to *attempt* and deliver tidal predictions that enthusiasts may find interesting. **Any data given here
 is without any claim explicit or implicit of fitness for any particular purpose**; it is **definitely not
 suitable for navigation**, simply because **all actual water levels *will* differ considerably from the figures
@@ -72,6 +68,10 @@ future and actual tides as known from direct observation or past measurements. A
 the data and / or data processing**).
 
 #### Disclaimer from Rijkswaterstaat
+
+> In case you don't believe me, you will perhaps believe Rijkswaterstaat, the world's leading agency on
+> coastal protection. These guys have managed to keep the Netherlands dry for several hundred years, so they
+> probably know what they're talking about when it comes to estimating the value of tidal predictions:
 
 Gebruik van de informatie op deze data is voor eigen risico. De getoonde gegevens zijn gebaseerd op de best
 beschikbare kennis en informatie van Rijkswaterstaat. Desondanks kunnen de werkelijke gegevens door
