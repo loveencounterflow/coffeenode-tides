@@ -50,9 +50,39 @@ You'll immediately notice some flaws here:
 ### Disclaimer
 
 Please note that **this Tical Calender can not and does not display *actual* water levels**; all it does
-is to attempt to deliver
+is to *attempt* and deliver tidal predictions that enthusiasts may find interesting. **Any data given here
+is without any claim explicit or implicit of fitness for any particular purpose**; it is **definitely not
+suitable for navigation**.
+
+#### from Rijkswaterstaat
 
 Gebruik van de informatie op deze data is voor eigen risico. De getoonde gegevens zijn gebaseerd op de best
 beschikbare kennis en informatie van Rijkswaterstaat. Desondanks kunnen de werkelijke gegevens door
 verschillende oorzaken afwijken van de hier getoonde actuele gegevens. Een afwijking kan bijvoorbeeld zitten
 in de getoonde verwachtingen.
+
+> from http://www.rijkswaterstaat.nl/geotool/astronomisch_getij.aspx?cookieload=true
+
+#### from XTide
+
+> **Note** while currently no use of `xtide` has been made to produce the current software, this may change
+
+> from http://www.flaterco.com/xtide/disclaimer.html
+
+NOT FOR NAVIGATION
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  The author assumes no liability
+for damages arising from use of this program OR of any 'harmonics data' that might be distributed with it.
+For details, see the appended GNU General Public License.
+
+(Accurate tide predictions can only be made if the 'harmonics data' for the relevant location are good.
+(Unfortunately, the only way the maintainer of those data has of knowing when they are bad is when someone
+(with access to authoritative tide predictions or observations reports a problem.  You should not use this
+(program or any data files that might be distributed with it if anyone or anything could come to harm as a
+(result of an incorrect tide prediction.  NOAA and similar agencies in other countries can provide you with
+(certified tide predictions if that is what you need.)
+
+XTide's predictions do not incorporate the effects of tropical storms, El Niño, seismic events, subsidence,
+uplift, or changes in global sea level.
+
