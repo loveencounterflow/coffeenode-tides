@@ -63,8 +63,9 @@ Please note that **this Tical Calender can not and does not display *actual* wat
 is to *attempt* and deliver tidal predictions that enthusiasts may find interesting. **Any data given here
 is without any claim explicit or implicit of fitness for any particular purpose**; it is **definitely not
 suitable for navigation**, simply because **all actual water levels *will* differ considerably from the figures
-given here with near certainty** (that's the fine difference between astronomical tides projected into the
-future and actual tides as known from direct observation or past measurements).
+given here with near-certainty** (that's the fine difference between astronomical tides projected into the
+future and actual tides as known from direct observation or past measurements. Also **there may be faults in
+the data and / or data processing**).
 
 #### Disclaimer from Rijkswaterstaat
 
