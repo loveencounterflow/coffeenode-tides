@@ -7,6 +7,7 @@ njs_path                  = require 'path'
 # BAP                       = require 'coffeenode-bitsnpieces'
 TYPES                     = require 'coffeenode-types'
 TRM                       = require 'coffeenode-trm'
+# FS                        = require 'coffeenode-fs'
 rpr                       = TRM.rpr.bind TRM
 badge                     = 'TIDES/write-tex'
 log                       = TRM.get_logger 'plain',     badge
@@ -19,7 +20,6 @@ help                      = TRM.get_logger 'help',      badge
 echo                      = TRM.echo.bind TRM
 #...........................................................................................................
 eventually                = process.nextTick
-Line_by_line              = require 'line-by-line'
 # XDate                     = require 'xdate'
 TEX                       = require 'jizura-xelatex'
 TIDES                     = require './main'

@@ -9,6 +9,7 @@ njs_path                  = require 'path'
 #...........................................................................................................
 # BAP                       = require 'coffeenode-bitsnpieces'
 TYPES                     = require 'coffeenode-types'
+FS                        = require 'coffeenode-fs'
 TRM                       = require 'coffeenode-trm'
 rpr                       = TRM.rpr.bind TRM
 badge                     = 'TIDES/main'
@@ -22,7 +23,6 @@ help                      = TRM.get_logger 'help',      badge
 echo                      = TRM.echo.bind TRM
 #...........................................................................................................
 eventually                = process.nextTick
-Line_by_line              = require 'line-by-line'
 XDate                     = require 'xdate'
 
 #-----------------------------------------------------------------------------------------------------------
@@ -207,28 +207,6 @@ XDate                     = require 'xdate'
   #---------------------------------------------------------------------------------------------------------
   return null
 
-
-#===========================================================================================================
-# HELPERS
-#-----------------------------------------------------------------------------------------------------------
-FS = {}
-
-
-#-----------------------------------------------------------------------------------------------------------
-FS.lines_of = ( route, handler ) ->
-  ### TAINT `line-by-line` makes heavy use of `process.nextTick` with recursive calls. This may cause
-  warnings and even break in some versions of NodeJS. ###
-  line_nr = 0
-  #.........................................................................................................
-  line_reader = new Line_by_line route
-  line_reader.on 'error', ( error ) => handler error
-  line_reader.on 'end',             => handler null, null
-  #.........................................................................................................
-  line_reader.on 'line',  ( line  ) =>
-    line_nr += 1
-    handler null, line, line_nr
-  #.........................................................................................................
-  return null
 
 
 ############################################################################################################

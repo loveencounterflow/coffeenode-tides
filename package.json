@@ -9,6 +9,7 @@
   "author": "",
   "license": "BSD-2-Clause",
   "dependencies": {
-    "xdate": "~0.8.0"
+    "xdate": "~0.8.0",
+    "coffeenode-fs": "~0.1.1"
   }
 }
