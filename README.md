@@ -47,14 +47,24 @@ You'll immediately notice some flaws here:
   package to draw the curves; it is reasonably simple to use, but takes a considerable time to get each
   curve drawn, so maybe i'll look for a way to do this outside of TeX.
 
-### Disclaimer
+### License (Must Read)
 
-<span style='color: red'>Please note that **this Tical Calender can not and does not display *actual* water levels**; all it does
+The use of this software and any included files is free for anyone. Please consider attribution if you
+want to base your own stuff on this project. Thanks.
+
+### Disclaimer (Must Read)
+
+Users of this software must have read, understood, and agreed to the below three disclaimers in order for
+the License of this product to become valid.
+
+#### Disclaimer for CoffeeNode Tides
+
+Please note that **this Tical Calender can not and does not display *actual* water levels**; all it does
 is to *attempt* and deliver tidal predictions that enthusiasts may find interesting. **Any data given here
 is without any claim explicit or implicit of fitness for any particular purpose**; it is **definitely not
-suitable for navigation**.</span>
+suitable for navigation**.
 
-#### from Rijkswaterstaat
+#### Disclaimer from Rijkswaterstaat
 
 Gebruik van de informatie op deze data is voor eigen risico. De getoonde gegevens zijn gebaseerd op de best
 beschikbare kennis en informatie van Rijkswaterstaat. Desondanks kunnen de werkelijke gegevens door
@@ -63,9 +73,10 @@ in de getoonde verwachtingen.
 
 > from http://www.rijkswaterstaat.nl/geotool/astronomisch_getij.aspx?cookieload=true
 
-#### from XTide
+#### Disclaimer from XTide
 
 > **Note** while currently no use of `xtide` has been made to produce the current software, this may change
+> in the future.
 
 > from http://www.flaterco.com/xtide/disclaimer.html
 
