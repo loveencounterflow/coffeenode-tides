@@ -4,3 +4,5 @@ node_modules
 *.fls
 # *.aux
 # *.auxcopy
+tidal-data
+!tidal-data/Yerseke.txt
