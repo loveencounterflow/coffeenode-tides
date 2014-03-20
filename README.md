@@ -73,7 +73,7 @@ the data and / or data processing**).
 > coastal protection. These guys have managed to keep the Netherlands dry for several hundred years, so they
 > probably know what they're talking about when it comes to estimating the value of tidal predictions:
 
-Gebruik van de informatie op deze data is voor eigen risico. De getoonde gegevens zijn gebaseerd op de best
+**Gebruik van de informatie op deze data is voor eigen risico**. De getoonde gegevens zijn gebaseerd op de best
 beschikbare kennis en informatie van Rijkswaterstaat. Desondanks kunnen de werkelijke gegevens door
 verschillende oorzaken afwijken van de hier getoonde actuele gegevens. Een afwijking kan bijvoorbeeld zitten
 in de getoonde verwachtingen.
@@ -85,9 +85,12 @@ in de getoonde verwachtingen.
 > **Note** while currently no use of `xtide` has been made to produce the current software, this may change
 > in the future.
 
+> If Rijkswaterstaat is not nerdy enough for you, XTide certainly is. Again, from someone who knows what
+> they're talking about:
+
 > from http://www.flaterco.com/xtide/disclaimer.html
 
-NOT FOR NAVIGATION
+**NOT FOR NAVIGATION**
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
 implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  The author assumes no liability
