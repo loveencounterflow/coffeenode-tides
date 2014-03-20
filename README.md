@@ -2,7 +2,30 @@
 
 ## CoffeeNode Tides
 
+CoffeeNode Tides is a (Xe)(La)TeX source generator to produce typographically appealing and moderately complex
+tidal calendars. I started this project a while ago for fun, so it's not fully usable as yet, but maybe
+someone can make use of it.
+
+For starters, here's what the current output looks like:
+
 <img src='https://github.com/loveencounterflow/coffeenode-tides/raw/master/art/Screen%20Shot%202014-03-20%20at%2020.47.55.png' width=400px>
 
+You'll immediately notice some flaws here:
+
+* most obviously, the lines in the low tide column strike through the times given; this is a result of the
+  trick i used to shift those times to their offset positions.
+
+* I actually want those lines to separate dates by enclosing them in boxes, so people don't have to guess
+  which times belongs to which date; however, with the current table setting strategy his will almost
+  be impossible to do. As a next step, i want to typeset in twice the number of rows and use `multirow`s
+  so that the *visual* rows can be offset by a half row's height (still with me?).
+
+* There are lines missing in the low tide column; this is due to a flaw in the data reader.
+
+* There is no column and page breaking implemented as yet, so the table will just run off the page.
+
+* I plan to include curves to visualize tidal levels; i already have this output:
+
+<img src='https://github.com/loveencounterflow/coffeenode-tides/raw/master/art/Screen%20Shot%202014-03-20%20at%2021.40.43.png' width=400px>
 
 

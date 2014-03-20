@@ -163,7 +163,7 @@ thinspace                 = '\u2009'
     dots = []
     for [ idx, height ] in collection
       dot_txt = "(#{height},#{idx})"
-      TEX.push R, TEX.raw "\\filldraw #{dot_txt} circle (1pt);%\n"
+      # TEX.push R, TEX.raw "\\filldraw #{dot_txt} circle (1pt);%\n"
       dots.push dot_txt
     first_dot = dots.shift()
     last_dot  = dots.pop()
@@ -211,7 +211,7 @@ thinspace                 = '\u2009'
     throw error if error?
     #.......................................................................................................
     if table_row is null
-      # echo TEX.rpr @new_dots_image hi_dots, lo_dots
+      echo TEX.rpr @new_dots_image hi_dots, lo_dots
       format = TEX.raw "{ r r l r q r | c | c | c }\n"
       echo TEX.rpr @new_tabular [ format, rows, ]
       echo postscript
