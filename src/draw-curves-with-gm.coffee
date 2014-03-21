@@ -150,19 +150,21 @@ hl_raw_dots = [
     [ 58, 27 ]
     [ 59, 27 ]
   ] ]
-for raw_dots in hl_raw_dots
+
+#-----------------------------------------------------------------------------------------------------------
+module.exports = @_draw_curves_with_gm = ( hi_dots, lo_dots, handler ) ->
+  ### Given the series for line indices and water level maxima and minima (in cm relative to LAT), return
+  a LaTeX snippet to include the respective image file. Missing image files will be generated on the fly.
+  ###
+
   for dot in raw_dots
     [ dot[ 1 ], dot[ 0 ] ] = dot
     dot[ 0 ] = Math.floor ( ( dot[ 0 ] +  0 ) *  10 ) + 100 + 0.5
     dot[ 1 ] = Math.floor ( ( dot[ 1 ] +  0 ) *  50 ) +   0 + 0.5
 
-debug hl_raw_dots
 
-# hl_bezier_dots = raw_dots
-hl_bezier_dots = []
-for raw_dots in hl_raw_dots
+  # hl_bezier_dots = raw_dots
   bezier_dots = []
-  hl_bezier_dots.push bezier_dots
   for dot0, idx in raw_dots
     dot3 = raw_dots[ idx + 1 ]
     break unless dot3?
@@ -173,37 +175,41 @@ for raw_dots in hl_raw_dots
     x2 = x3
     bezier_dots.push [ dot0, [ x1, y1, ], [ x2, y2, ], dot3, ]
 
-dir = '/tmp'
+  dir = '/tmp'
 
-# GM 1000, 1000, "#00ff55aa"
-image = GM 500, 3000, "#ffffff00"
-  .fontSize 68
-  # .stroke "#ff5533", 5
-  # .stroke "#ff5533", 1
-  # .fill '#123456'
-  .fill 'transparent'
-  .stroke "red", 1
+  # GM 1000, 1000, "#00ff55aa"
+  image = GM 500, 3000, "#ffffff00"
+    .fontSize 68
+    # .stroke "#ff5533", 5
+    # .stroke "#ff5533", 1
+    # .fill '#123456'
+    .fill 'transparent'
+    .stroke "red", 1
 
-for bezier_dots in hl_bezier_dots
-  for dots in bezier_dots
-    image.drawBezier dots...
+  for bezier_dots in hl_bezier_dots
+    for dots in bezier_dots
+      image.drawBezier dots...
 
-# image.fill 'blue'
-for bezier_dots in hl_bezier_dots
-  for dots in hl_bezier_dots
-    ### TAINT leaving out last dot ###
-    dot0 = dots[ 0 ]
-    dot1 = [ dot0[ 0 ] + 2, dot0[ 1 ], ]
-    debug dot1
-    # image.drawCircle dot0..., dot1...
+  # image.fill 'blue'
+  for bezier_dots in hl_bezier_dots
+    for dots in hl_bezier_dots
+      ### TAINT leaving out last dot ###
+      dot0 = dots[ 0 ]
+      dot1 = [ dot0[ 0 ] + 2, dot0[ 1 ], ]
+      debug dot1
+      # image.drawCircle dot0..., dot1...
 
-image.write dir + "/new.png", ( error ) ->
-    throw error if error?
-    console.log @outname + " created :: " + arguments[3]
-    return
+  image.write dir + "/new.png", ( error ) ->
+      throw error if error?
+      console.log @outname + " created :: " + arguments[3]
+      return
 
+#-----------------------------------------------------------------------------------------------------------
+@main = ->
+  throw new error "not implemented"
 
-
+############################################################################################################
+@main() unless module.parent?
 
 
 

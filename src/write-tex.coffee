@@ -23,13 +23,13 @@ eventually                = process.nextTick
 # XDate                     = require 'xdate'
 TEX                       = require 'jizura-xelatex'
 TIDES                     = require './main'
+@draw_curves_with_hobby   = require './draw-curves-with-gm'
 #...........................................................................................................
 read = ( route ) ->
   return njs_fs.readFileSync ( njs_path.join __dirname, route ), encoding: 'utf-8'
 #...........................................................................................................
 preamble                  = read '../tex-inputs/preamble.tex'
 postscript                = read '../tex-inputs/postscript.tex'
-
 
 #===========================================================================================================
 # TEX VOCABULARY
@@ -156,24 +156,35 @@ thinspace                 = '\u2009'
   return R
 
 #-----------------------------------------------------------------------------------------------------------
-@new_dots_image = ( hi_dots, lo_dots, image_format = 'gm' ) ->
-  method = @[ "_new_dots_image_using_#{image_format}" ]
+@draw_curves = ( hi_dots, lo_dots, handler ) ->
+  throw new Error "must use options object; not yet implemented"
+  method = @[ "draw_curves_with_#{image_format}" ]
   throw new Error "unknown image format #{image_format}" unless method?
   method = method.bind @
-  return method hi_dots, lo_dots
+  return method hi_dots, lo_dots, handler
+
+# #-----------------------------------------------------------------------------------------------------------
+# @draw_curves_with_gm = ( hi_dots, lo_dots ) ->
+#   R = ''
+#   for collection in [ hi_dots, lo_dots, ]
+#     dots = []
+#     debug '--------------------------------------------'
+#     for [ idx, height ] in collection
+#       debug [ height, idx ]
+#   return R
 
 #-----------------------------------------------------------------------------------------------------------
-@_new_dots_image_using_gm = ( hi_dots, lo_dots ) ->
-  R = ''
-  for collection in [ hi_dots, lo_dots, ]
-    dots = []
-    debug '--------------------------------------------'
-    for [ idx, height ] in collection
-      debug [ height, idx ]
-  return R
+@draw_curves_with_hobby = ( hi_dots, lo_dots, handler ) ->
+  ### Given the series for line indices and water level maxima and minima (in cm relative to LAT), return
+  a LaTeX snippet to generate curves using the `hobby` package.
 
-#-----------------------------------------------------------------------------------------------------------
-@_new_dots_image_using_hobby = ( hi_dots, lo_dots ) ->
+  **Note** This code is no longer maintained and has been left here for future reference only. It is
+  somehwat slow and conceptually more difficult to get right than using the `gm` module; it also does not
+  allow to easily cache results between runs, so all the computation has to be done on each run anew.
+  It also violates the principle that computation-heavy stuff with complex logics should be done outside
+  of LaTeX, which is not really built to do that kind of stuff. ###
+  throw new Error """code no longer maintained; please read comments in
+    `src/main.coffee#draw_curves_with_hobby` to learn why."""
   R = TEX.new_container []
   TEX.push R, TEX.raw "\\begin{tikzpicture}[scale=1,x=0.1mm,y=-1em]%\n"
   for collection in [ hi_dots, lo_dots, ]
@@ -228,7 +239,7 @@ thinspace                 = '\u2009'
     throw error if error?
     #.......................................................................................................
     if table_row is null
-      echo TEX.rpr @new_dots_image hi_dots, lo_dots
+      echo TEX.rpr @draw_curves hi_dots, lo_dots
       format = TEX.raw "{ r r l r q r | c | c | c }\n"
       echo TEX.rpr @new_tabular [ format, rows, ]
       echo postscript
