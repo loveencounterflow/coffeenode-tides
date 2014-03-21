@@ -11,5 +11,8 @@
   "dependencies": {
     "xdate": "~0.8.0",
     "coffeenode-fs": "~0.1.1"
+  },
+  "devDependencies": {
+    "coffee-script": "~1.7.1"
   }
 }

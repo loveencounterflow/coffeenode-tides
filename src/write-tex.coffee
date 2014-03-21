@@ -156,14 +156,31 @@ thinspace                 = '\u2009'
   return R
 
 #-----------------------------------------------------------------------------------------------------------
-@new_dots_image = ( hi_dots, lo_dots ) ->
+@new_dots_image = ( hi_dots, lo_dots, image_format = 'gm' ) ->
+  method = @[ "_new_dots_image_using_#{image_format}" ]
+  throw new Error "unknown image format #{image_format}" unless method?
+  method = method.bind @
+  return method hi_dots, lo_dots
+
+#-----------------------------------------------------------------------------------------------------------
+@_new_dots_image_using_gm = ( hi_dots, lo_dots ) ->
+  R = ''
+  for collection in [ hi_dots, lo_dots, ]
+    dots = []
+    debug '--------------------------------------------'
+    for [ idx, height ] in collection
+      debug [ height, idx ]
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
+@_new_dots_image_using_hobby = ( hi_dots, lo_dots ) ->
   R = TEX.new_container []
   TEX.push R, TEX.raw "\\begin{tikzpicture}[scale=1,x=0.1mm,y=-1em]%\n"
   for collection in [ hi_dots, lo_dots, ]
     dots = []
     for [ idx, height ] in collection
       dot_txt = "(#{height},#{idx})"
-      # TEX.push R, TEX.raw "\\filldraw #{dot_txt} circle (1pt);%\n"
+      TEX.push R, TEX.raw "\\filldraw #{dot_txt} circle (1pt);%\n"
       dots.push dot_txt
     first_dot = dots.shift()
     last_dot  = dots.pop()

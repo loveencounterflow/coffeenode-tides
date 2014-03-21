@@ -144,11 +144,6 @@ XDate                     = require 'xdate'
 @walk_table_rows = ( route, handler ) ->
   # line        = @new_tidal_fields()
   # Z           = @new_tidal_records route
-  ### TAINT we use no less than two variables to do one thing, namely terminate prematurely for testing
-  purposes, while still preserving the default behavior and ensure that we call the handler exactly once
-  (on success or failure). Question is whether this might not be made somewhat shorter? ###
-  finished    = no
-  over        = no
   Z           = null
   last_day    = null
   last_month  = null
@@ -156,16 +151,13 @@ XDate                     = require 'xdate'
   #---------------------------------------------------------------------------------------------------------
   @walk_tidal_records route, ( error, tidal_record ) =>
     throw error if error?
-    return if over
-    source_line_nr  = tidal_record?[ 'source-line-nr' ] ? null
-    finished        = tidal_record is null or source_line_nr > 150 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    finished        = ( tidal_record is null ) or finished and not over
     #.......................................................................................................
-    if finished
-      over = true
+    if tidal_record is null
       handler null, Z if Z?
       return handler null, null # ( @_postprocess Z )...
+    return null if tidal_record[ 'date' ][ 1 ] isnt ' 1' # !!!!!!!!!!!!!!!!!!!!!!!!!!!! only January
     #.......................................................................................................
+    source_line_nr  = tidal_record[ 'source-line-nr' ]
     hl              = tidal_record[ 'hl' ]
     this_date       = tidal_record[ 'date' ]
     [ this_year
