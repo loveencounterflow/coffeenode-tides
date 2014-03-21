@@ -83,7 +83,7 @@ in de getoonde verwachtingen.
 #### Disclaimer from XTide
 
 > **Note** while currently no use of `xtide` has been made to produce the current software, this may change
-> in the future.
+> in the future. *The disclaimer still applies to CoffeeNode Tides*.
 
 > If Rijkswaterstaat is not nerdy enough for you, XTide certainly is. Again, from someone who knows what
 > they're talking about:
@@ -109,5 +109,99 @@ uplift, or changes in global sea level.**
 
 
 
+<!--
 
+http://live.getij.nl/export.cfm?format=txt&from=01-01-2014&to=31-12-2014&uitvoer=2&interval=10&lunarphase=yes&location=EEMHVN&Timezone=MET_DST&refPlane=LAT&graphRefPlane=LAT&bottom=0&keel=0
+
+
+locations =
+  'AUKFPFM':        'Aukfield platform'
+  'BAALHK':         'Baalhoek'
+  'BATH':           'Bath'
+  'BEERKNL':        'Beerkanaal'
+  'BERGSDSWT':      'Bergse Diepsluis west'
+  'BORSSLE':        'Borssele'
+  'BRESKS':         'Breskens'
+  'BROUWHVSGT02':   'Brouwershavensche Gat 02'
+  'BROUWHVSGT08':   'Brouwershavensche Gat 08'
+  'CADZD':          'Cadzand'
+  'DELFZL':         'Delfzijl'
+  'DENHDR':         'Den Helder'
+  'DENOVBTN':       'Den Oever'
+  'DINTHVN':        'Dintelhaven'
+  'DORDT':          'Dordrecht'
+  'EEMHVN':         'Eemhaven'
+  'EEMSHVN':        'Eemshaven'
+  'EURPFM':         'Euro platform'
+  'EURPHVN':        'Europahaven'
+  'GEULHVN':        'Geulhaven'
+  'GOIDSOD':        'Goidschalxoord'
+  'GOUDBG':         'Gouda brug'
+  'HAGSBNDN':       'Hagestein beneden'
+  'HANSWT':         'Hansweert'
+  'HARLGN':         'Harlingen'
+  'HARMSBG':        'Harmsenbrug'
+  'HARTBG':         'Hartelbrug'
+  'HARTHVN':        'Hartelhaven'
+  'HARTKWT':        'Hartel-Kuwait'
+  'HARVT10':        'Haringvliet 10'
+  'HEESBN':         'Heesbeen'
+  'HELLVSS':        'Hellevoetsluis'
+  'HOEKVHLD':       'Hoek van Holland'
+  'HUIBGT':         'Huibertgat'
+  'IJMDBTHVN':      'IJmuiden'
+  'K13APFM':        'K13A platform'
+  'KATSBTN':        'Kats'
+  'KEIZVR':         'Keizersveer'
+  'KORNWDZBTN':     'Kornwerderzand'
+  'KRAMMSZWT':      'Krammersluizen west'
+  'KRIMPADIJSL':    'Krimpen aan de IJssel'
+  'KRIMPADLK':      'Krimpen aan de Lek'
+  'LAUWOG':         'Lauwersoog'
+  'LICHTELGRE':     'Lichteiland Goeree'
+  'LITHDP':         'Lith dorp'
+  'MAASSS':         'Maassluis'
+  'MARLGT':         'Marollegat'
+  'MOERDK':         'Moerdijk'
+  'NES':            'Nes'
+  'NIEUWSTZL':      'Nieuwe Statenzijl'
+  'NOORDWMPT':      'Meetpost Noordwijk'
+  'OOSTSDE04':      'Oosterschelde 04'
+  'OOSTSDE11':      'Oosterschelde 11'
+  'OOSTSDE14':      'Oosterschelde 14'
+  'OUDSD':          'Oudeschild'
+  'OVLVHWT':        'Overloop van Hansweert'
+  'PARKSS':         'Parksluis'
+  'PETTZD':         'Petten zuid'
+  'RAKND':          'Rak noord'
+  'ROOMPBNN':       'Roompot binnen'
+  'ROOMPBTN':       'Roompot buiten'
+  'ROTTDM':         'Rotterdam'
+  'ROZBSSNZDE':     'Rozenburgsesluis noordzijde'
+  'SCHAARVDND':     'Schaar van de Noord'
+  'SCHEURHVN':      'Scheurhaven'
+  'SCHEVNGN':       'Scheveningen'
+  'SCHIERMNOG':     'Schiermonnikoog'
+  'SCHOONHVN':      'Schoonhoven'
+  'SPIJKNSE':       'Spijkenisse'
+  'STAVNSE':        'Stavenisse'
+  'STELLDBTN':      'Haringvlietsluizen'
+  'SUURHBNZDE':     'Suurhoffbrug noordzijde'
+  'TERNZN':         'Terneuzen'
+  'TERSLNZE':       'Terschelling Noordzee'
+  'TEXNZE':         'Texel Noordzee'
+  'VLAARDGN':       'Vlaardingen'
+  'VLAKTVDRN':      'Vlakte van de Raan'
+  'VLIELHVN':       'Vlieland haven'
+  'VLISSGN':        'Vlissingen'
+  'VURN':           'Vuren'
+  'WALSODN':        'Walsoorden'
+  'WERKDBTN':       'Werkendam buiten'
+  'WESTKPLE':       'Westkapelle'
+  'WESTTSLG':       'West-Terschelling'
+  'WIERMGDN':       'Wierumergronden'
+  'YERSKE':         'Yerseke'
+
+
+ -->
 
