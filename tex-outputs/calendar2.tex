@@ -1,0 +1,87 @@
+
+\documentclass[a4paper]{memoir}
+% \documentclass{book}
+\usepackage{coffeenode-tides}
+
+
+% % http://tex.stackexchange.com/questions/29537/table-can-i-shift-a-column-by-half-the-height-of-a-row?rq=1
+% % must use `\multicolumn{1}{l}{...}` in header to avoid shifting there
+% \usepackage{collcell}
+% \newcommand*{\movedown}[1]{%
+%   \smash{\raisebox{-1.3ex}{#1}}}
+% \newcolumntype{q}{>{\collectcell\movedown}r<{\endcollectcell}}
+%    % (for "quotient")
+
+\usepackage[absolute]{textpos}
+\setlength{\TPHorizModule}{1mm}
+\setlength{\TPVertModule}{1mm}
+% \textblockorigin{hpos}{vpos} % upper left corner of main printing area
+
+% You may give a optional argument to the \Lenv{textblock}
+% environment, specifying which point in the box
+% is to be placed at the specified point:
+% \begin{quote}
+% \begin{raggedright}
+% \cmd|\begin{textblock}{<hsize>}[<ho>,<vo>](<hpos>,<vpos>)|\\
+% text...\\
+% |\end{textblock}|
+% \end{raggedright}
+% \end{quote}
+% The coordinates \meta{ho} and \meta{vo} are fractions of the
+% width and height of the text box, respectively, and state that the
+% box is to be placed so that the reference
+% point (\meta{ho},\meta{vo}) within the box is to be placed at the point
+% (\meta{hpos},\meta{vpos}) on the page.  The default specification is
+% [0,0], the top left of the box: [0,1] would be the bottom left, and
+% [0.5,0.5] the middle.
+
+
+
+\begin{document}
+
+
+% \multicolumn{1}{r}{L}
+
+% \begin{textblock}{10}[0.5,0.5](100,100)
+\begin{textblock*}{10mm}(100mm,100mm)
+helo world!
+\end{textblock*}
+
+\begin{textblock}{100}[1,0.5](100,120)
+\flushright to the left
+\end{textblock}
+
+\begin{textblock}{100}[0,0.5](100,120)
+% to the right
+\framebox[1.1\width]{Guess I'm framed now!}
+\end{textblock}
+
+
+\begin{tabular}
+{ r r l r r r | c | c | c }
+\multicolumn{3}{l}{{\color{DarkRed}\scFont{}\large{} Jan} 2014} & H & L & \\
+
+\hline
+
+\cline{2-4}\cline{5-5}\newmoon & {\itFont{} 1}. & {\itFont{}za} &  &  2 : 16 & \\
+ &  &  &  8 : 26 & 14 : 41 & \\
+\cline{5-5} &  &  & 20 : 46 &  3 : 13 & \\
+\cline{2-4} & {\itFont{} 2}. & {\color{DarkRed}\itFont{}zo} &  9 : 15 & 15 : 31 & \\
+\cline{5-5} &  &  & 21 : 36 &  4 : 02 & \\
+
+\hline
+
+\multirow{2}{*}{Multirow} & \multirow{2}{*}{the ant knows better} & 9 : 15 \\
+C & \multirow{2}{*}{Multirow} & 15 : 31 \\
+
+\\
+
+\hline
+
+
+\end{tabular}
+
+% \end{foo}
+% \end{multicols}
+\end{document}
+

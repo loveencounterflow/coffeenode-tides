@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+./node_modules/coffee-script/bin/coffee -o lib -c src && \
+git add --all && \
+git commit -m "autocommit" && \
+npm version patch && \
+npm publish && \
+git add package.json && \
+git commit -m "version bump" && \
+git push -u origin master
+

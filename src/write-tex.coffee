@@ -157,7 +157,8 @@ thinspace                 = '\u2009'
 
 #-----------------------------------------------------------------------------------------------------------
 @draw_curves = ( hi_dots, lo_dots, handler ) ->
-  throw new Error "must use options object; not yet implemented"
+  warn "`write-tex#draw_curves` must use options object; not yet implemented"
+  return handler null, 'CURVES OMITTED'
   method = @[ "draw_curves_with_#{image_format}" ]
   throw new Error "unknown image format #{image_format}" unless method?
   method = method.bind @
@@ -239,7 +240,8 @@ thinspace                 = '\u2009'
     throw error if error?
     #.......................................................................................................
     if table_row is null
-      echo TEX.rpr @draw_curves hi_dots, lo_dots
+      # echo TEX.rpr @draw_curves hi_dots, lo_dots
+      echo 'CURVES OMITTED'
       format = TEX.raw "{ r r l r q r | c | c | c }\n"
       echo TEX.rpr @new_tabular [ format, rows, ]
       echo postscript

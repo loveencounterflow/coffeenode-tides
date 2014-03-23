@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+coffee --watch --output /QUICK/tides/lib --compile /QUICK/tides/src
+
+
