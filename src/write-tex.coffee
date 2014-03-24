@@ -237,7 +237,7 @@ thinspace                 = '\u2009'
   ### TAINT use proper units datatype ###
   ### TAINT make prescision configurable ###
   # value = ( ( day_idx * 24 + ( @_as_integer time[ 0 ] ) ) * 60 + @_as_integer time[ 1 ] ) * module
-  value = row_idx * 1.5
+  value = row_idx * 2
   value = value.toFixed 2
   return "#{value}#{unit}"
 
@@ -292,7 +292,7 @@ thinspace                 = '\u2009'
         throw new Error "expected `h` or `l` for hl indicator, got #{rpr hl}"
     #.......................................................................................................
     ### TAINT use proper escaping ###
-    echo """\\begin{textblock*}{15mm}[1,0.5](#{x_position},#{y_position})\\flushright #{this_time[0]} : #{this_time[1]}\\end{textblock*}"""
+    echo """\\begin{textblock*}{15mm}[1,0.5](#{x_position},#{y_position})\\flushright #{this_time[0]} : #{this_time[1]}\\gridstrut\\end{textblock*}"""
     # echo """\\begin{textblock*}{15mm}[1,0.5](130mm,#{y_position})\\flushright —\\end{textblock*}"""
 
     #   # TEX.push rows, multicolumn [ 3, 'l', [ month_tex, year, ], ]

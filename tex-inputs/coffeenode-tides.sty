@@ -10,6 +10,45 @@
 % \usepackage{cxltx-styles-multimulti}          % multiple columns and rows on pages and in tables
 \usepackage{cxltx-styles-position-absolute}   % absolute textpositioning
 
+% \usepackage{tikz}
+% \usepackage{eso-pic}
+% \usetikzlibrary{backgrounds}
+% \AddToShipoutPicture{%
+%     \begin{tikzpicture}[overlay,remember picture]
+%         % \draw[thick,red]
+%         %       (current page.north east)
+%         %       rectangle (current page.south west);
+%         % \begin{pgfonlayer}{background}
+%         \draw[red!5!white,thin,opacity=0.3]
+%              (current page.south west) grid[step=1mm]
+%              (current page.north east);
+%         \draw[red!15!white,opacity=0.3]
+%              (current page.south west) grid[step=5mm]
+%              (current page.north east);
+%         \draw[red!30!white,opacity=0.3]
+%              (current page.south west) grid[step=10mm]
+%              (current page.north east);
+%         % \end{pgfonlayer}
+%     \end{tikzpicture}%
+% }
+
+
+% \usepackage[top-left]{pagegrid}
+% \usepackage{showframe}
+
+\newcommand{\jzrdivider}{\vskip0pt\hrule\vskip-0.4pt}
+\newcommand{\jzrdividerinvisible}{\vskip0pt\hrule width0mm\vskip-0.4pt}
+\newdimen\nominalfontsize
+\newdimen\gridstrutheight
+\newdimen\gridstrutwidth
+\newdimen\gridstrutdepth
+\newdimen\gridstrutlength
+\nominalfontsize=4.5mm
+\gridstrutheight=4.25mm
+\gridstrutwidth=0.0mm
+\gridstrutdepth=2.25mm
+\gridstrutlength=\dimexpr\gridstrutheight+\gridstrutdepth
+\newcommand{\gridstrut}{{\color{blue}\vrule height\gridstrutheight width\gridstrutwidth depth\gridstrutdepth}}
 
 
 % ==========================================================================================================
