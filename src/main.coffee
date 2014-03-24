@@ -39,39 +39,13 @@ XDate                     = require 'xdate'
     '~isa':             'GEZEITEN/tidal-record'
     'source-line-nr':   source_line_nr
     'moon-quarter':     moon_quarter
+    'weekday-idx':      null
     'date':             date
     'time':             time
     'hl':               hl
     'height':           height
   #.........................................................................................................
   return R
-
-#-----------------------------------------------------------------------------------------------------------
-@new_table_row = ( source_line_nr, date ) ->
-  R =
-    '~isa':             'GEZEITEN/tidal-table-line'
-    'source-line-nr':   source_line_nr
-    'date':             date
-    'weekday-idx':      null
-    'moon-quarter':     null
-    'day-change':       false
-    'hi-water-time':    null
-    'lo-water-time':    null
-    'hi-water-height':  null
-    'lo-water-height':  null
-  #.........................................................................................................
-  return R
-
-# #-----------------------------------------------------------------------------------------------------------
-# @new_tidal_records = ( source_route ) ->
-#   R =
-#     '~isa':             'GEZEITEN/tidal-records'
-#     'source-route':     source_route
-#   return R
-
-# #-----------------------------------------------------------------------------------------------------------
-# @_postprocess = ( result ) ->
-#   return [ null, result, ]
 
 #-----------------------------------------------------------------------------------------------------------
 @walk_tidal_raw_fields = ( route, handler ) ->
@@ -136,44 +110,6 @@ XDate                     = require 'xdate'
     #.......................................................................................................
     Z = @new_tidal_record source_line_nr, moon_quarter, date, time, hl, height
     #.......................................................................................................
-    handler null, Z
-  #---------------------------------------------------------------------------------------------------------
-  return null
-
-#-----------------------------------------------------------------------------------------------------------
-@walk_table_rows = ( route, handler ) ->
-  # line        = @new_tidal_fields()
-  # Z           = @new_tidal_records route
-  Z           = null
-  last_day    = null
-  last_month  = null
-  last_year   = null
-  #---------------------------------------------------------------------------------------------------------
-  @walk_tidal_records route, ( error, tidal_record ) =>
-    throw error if error?
-    #.......................................................................................................
-    if tidal_record is null
-      handler null, Z if Z?
-      return handler null, null # ( @_postprocess Z )...
-    return null if tidal_record[ 'date' ][ 1 ] isnt ' 1' # !!!!!!!!!!!!!!!!!!!!!!!!!!!! only January
-    #.......................................................................................................
-    source_line_nr  = tidal_record[ 'source-line-nr' ]
-    hl              = tidal_record[ 'hl' ]
-    this_date       = tidal_record[ 'date' ]
-    [ this_year
-      this_month
-      this_day    ] = this_date
-    #.......................................................................................................
-    unless Z?
-      Z = @new_table_row source_line_nr, this_date
-    #.......................................................................................................
-    if hl is 'h'
-      Z[ 'hi-water-time'   ] = tidal_record[ 'time'   ]
-      Z[ 'hi-water-height' ] = tidal_record[ 'height' ]
-    else
-      Z[ 'lo-water-time'   ] = tidal_record[ 'time'   ]
-      Z[ 'lo-water-height' ] = tidal_record[ 'height' ]
-    #.......................................................................................................
     ### TAINT this procedure will likely work if the place of processing is in the same timezone as the
     place where the given data refers to; in the more general case, however, JavaScript as running in NodeJS
     will probably understand dates in terms of the current local at the place of processing and cause
@@ -182,20 +118,10 @@ XDate                     = require 'xdate'
     Also, under the assumptions that each day appears at least once in the data and all days are called up
     sequentially, it suffices to calculate the weekday for the first day called and the cycle through
     the list of weekday names. ###
-    unless Z[ 'weekday-idx' ]?
-      xdate               = new XDate this_year, this_month, this_day
-      Z[ 'weekday-idx' ]  = ( xdate.getDay() + 6 ) % 7
+    xdate               = new XDate year_txt, month_txt, day_txt
+    Z[ 'weekday-idx' ]  = ( xdate.getDay() + 6 ) % 7
     #.......................................................................................................
-    if this_day isnt last_day
-      last_day = this_day
-      Z[ 'day-change' ] = yes if hl is 'l'
-    #.......................................................................................................
-    if ( moon_quarter = tidal_record[ 'moon-quarter' ] )?
-      Z[ 'moon-quarter' ] = moon_quarter
-    #.......................................................................................................
-    if Z[ 'lo-water-time' ]?
-      handler null, Z
-      Z = null
+    handler null, Z
   #---------------------------------------------------------------------------------------------------------
   return null
 

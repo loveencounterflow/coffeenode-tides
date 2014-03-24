@@ -31,6 +31,14 @@ read = ( route ) ->
 preamble                  = read '../tex-inputs/preamble.tex'
 postscript                = read '../tex-inputs/postscript.tex'
 
+
+#===========================================================================================================
+# HELPERS
+#-----------------------------------------------------------------------------------------------------------
+@_as_integer = ( hint ) ->
+  return parseInt hint, 10
+
+
 #===========================================================================================================
 # TEX VOCABULARY
 #-----------------------------------------------------------------------------------------------------------
@@ -225,10 +233,20 @@ thinspace                 = '\u2009'
 ###
 
 #-----------------------------------------------------------------------------------------------------------
+@y_position_from_datetime = ( day_idx, time, module, unit = 'mm' ) ->
+  ### TAINT use proper units datatype ###
+  ### TAINT make prescision configurable ###
+  value = ( ( day_idx * 24 + ( @_as_integer time[ 0 ] ) ) * 60 + @_as_integer time[ 1 ] ) * module
+  value = value.toFixed 1
+  return "#{value}#{unit}"
+
+#-----------------------------------------------------------------------------------------------------------
 @main = ->
-  route         = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
+  ### TAINT must parametrize data source ###
+  route         = njs_path.join __dirname, '../tidal-data/Yerseke.txt'
   rows          = TEX.new_container []
   row_idx       = -1
+  day_idx       = -1
   hi_dots       = []
   lo_dots       = []
   last_day      = null
@@ -236,19 +254,45 @@ thinspace                 = '\u2009'
   wrote_header  = no
   echo preamble
   #---------------------------------------------------------------------------------------------------------
-  TIDES.walk_table_rows route, ( error, table_row ) =>
+  TIDES.walk_tidal_records route, ( error, trc ) =>
     throw error if error?
+    # debug trc
     #.......................................................................................................
-    if table_row is null
+    if trc is null
       # echo TEX.rpr @draw_curves hi_dots, lo_dots
       echo postscript
       return
     #.......................................................................................................
     row_idx += 1
+    this_date       = trc[ 'date' ]
+    this_time       = trc[ 'time' ]
+    [ this_year
+      this_month
+      this_day    ] = this_date
+    return null unless this_month is ' 1'
     #.......................................................................................................
     unless wrote_header
-      year      = table_row[ 'date' ][ 0 ]
-      month_tex = @format_month table_row[ 'date' ][ 1 ]
+      this_month_tex = @format_month this_month
+      wrote_header = yes
+    #.......................................................................................................
+    unless last_day is this_day
+      last_day  = this_day
+      day_idx  += 1
+    #.......................................................................................................
+    y_position = @y_position_from_datetime day_idx, this_time, 1 / 178, 'mm'
+    #.......................................................................................................
+    switch hl = trc[ 'hl' ]
+      when 'h'
+        x_position = '100mm'
+      when 'l'
+        x_position = '120mm'
+      else
+        throw new Error "expected `h` or `l` for hl indicator, got #{rpr hl}"
+    #.......................................................................................................
+    ### TAINT use proper escaping ###
+    echo """\\begin{textblock*}{15mm}[1,0.5](#{x_position},#{y_position})\\flushright #{this_time[0]} : #{this_time[1]}\\end{textblock*}"""
+    echo """\\begin{textblock*}{15mm}[1,0.5](130mm,#{y_position})\\flushright —\\end{textblock*}"""
+
     #   # TEX.push rows, multicolumn [ 3, 'l', [ month_tex, year, ], ]
     #   TEX.push rows, multicolumn [ 3, 'l', TEX.new_container [ month_tex, ' ', year, ] ]
     #   TEX.push rows, next_cell
@@ -258,35 +302,34 @@ thinspace                 = '\u2009'
     #   TEX.push rows, next_cell
     #   TEX.push rows, next_line
     #   TEX.push rows, hline
-    #   wrote_header = yes
     # #.......................................................................................................
-    # if ( height = table_row[ 'hi-water-height' ] )?
+    # if ( height = trc[ 'hi-water-height' ] )?
     #   hi_dots.push [ row_idx, height, ]
     # #.......................................................................................................
-    # if ( height = table_row[ 'lo-water-height' ] )?
+    # if ( height = trc[ 'lo-water-height' ] )?
     #   lo_dots.push [ row_idx, height, ]
     # #.......................................................................................................
     # if moon_quarter?
-    #   table_row[ 'moon-quarter' ] = moon_quarter
+    #   trc[ 'moon-quarter' ] = moon_quarter
     #   moon_quarter                = null
     # #.......................................................................................................
-    # if last_day is table_row[ 'date' ][ 2 ]
-    #   table_row[ 'is-new-day' ]   = no
-    #   table_row[ 'date' ]         = null
-    #   table_row[ 'weekday-idx' ]  = null
+    # if last_day is trc[ 'date' ][ 2 ]
+    #   trc[ 'is-new-day' ]   = no
+    #   trc[ 'date' ]         = null
+    #   trc[ 'weekday-idx' ]  = null
     #   #.....................................................................................................
-    #   if table_row[ 'moon-quarter' ]?
-    #     moon_quarter                = table_row[ 'moon-quarter' ]
-    #     table_row[ 'moon-quarter' ] = null
+    #   if trc[ 'moon-quarter' ]?
+    #     moon_quarter                = trc[ 'moon-quarter' ]
+    #     trc[ 'moon-quarter' ] = null
     #   #.....................................................................................................
     #   else
     #     moon_quarter                = null
     # #.......................................................................................................
     # else
-    #   table_row[ 'is-new-day' ]   = yes
-    #   last_day                    = table_row[ 'date' ][ 2 ]
+    #   trc[ 'is-new-day' ]   = yes
+    #   last_day                    = trc[ 'date' ][ 2 ]
     # #.......................................................................................................
-    # TEX.push rows, @new_row table_row
+    # TEX.push rows, @new_row trc
 
 ############################################################################################################
 @main() unless module.parent?
