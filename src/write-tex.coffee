@@ -233,11 +233,12 @@ thinspace                 = '\u2009'
 ###
 
 #-----------------------------------------------------------------------------------------------------------
-@y_position_from_datetime = ( day_idx, time, module, unit = 'mm' ) ->
+@y_position_from_datetime = ( row_idx, day_idx, time, module, unit = 'mm' ) ->
   ### TAINT use proper units datatype ###
   ### TAINT make prescision configurable ###
-  value = ( ( day_idx * 24 + ( @_as_integer time[ 0 ] ) ) * 60 + @_as_integer time[ 1 ] ) * module
-  value = value.toFixed 1
+  # value = ( ( day_idx * 24 + ( @_as_integer time[ 0 ] ) ) * 60 + @_as_integer time[ 1 ] ) * module
+  value = row_idx * 1.5
+  value = value.toFixed 2
   return "#{value}#{unit}"
 
 #-----------------------------------------------------------------------------------------------------------
@@ -279,19 +280,20 @@ thinspace                 = '\u2009'
       last_day  = this_day
       day_idx  += 1
     #.......................................................................................................
-    y_position = @y_position_from_datetime day_idx, this_time, 1 / 178, 'mm'
+    # y_position = @y_position_from_datetime day_idx, this_time, 1 / 178, 'mm'
+    y_position = @y_position_from_datetime row_idx, day_idx, this_time, 1 / 200, 'mm'
     #.......................................................................................................
     switch hl = trc[ 'hl' ]
       when 'h'
         x_position = '100mm'
       when 'l'
-        x_position = '120mm'
+        x_position = '110mm'
       else
         throw new Error "expected `h` or `l` for hl indicator, got #{rpr hl}"
     #.......................................................................................................
     ### TAINT use proper escaping ###
     echo """\\begin{textblock*}{15mm}[1,0.5](#{x_position},#{y_position})\\flushright #{this_time[0]} : #{this_time[1]}\\end{textblock*}"""
-    echo """\\begin{textblock*}{15mm}[1,0.5](130mm,#{y_position})\\flushright —\\end{textblock*}"""
+    # echo """\\begin{textblock*}{15mm}[1,0.5](130mm,#{y_position})\\flushright —\\end{textblock*}"""
 
     #   # TEX.push rows, multicolumn [ 3, 'l', [ month_tex, year, ], ]
     #   TEX.push rows, multicolumn [ 3, 'l', TEX.new_container [ month_tex, ' ', year, ] ]
