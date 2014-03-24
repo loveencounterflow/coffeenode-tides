@@ -241,9 +241,6 @@ thinspace                 = '\u2009'
     #.......................................................................................................
     if table_row is null
       # echo TEX.rpr @draw_curves hi_dots, lo_dots
-      echo 'CURVES OMITTED'
-      format = TEX.raw "{ r r l r q r | c | c | c }\n"
-      echo TEX.rpr @new_tabular [ format, rows, ]
       echo postscript
       return
     #.......................................................................................................
@@ -252,44 +249,44 @@ thinspace                 = '\u2009'
     unless wrote_header
       year      = table_row[ 'date' ][ 0 ]
       month_tex = @format_month table_row[ 'date' ][ 1 ]
-      # TEX.push rows, multicolumn [ 3, 'l', [ month_tex, year, ], ]
-      TEX.push rows, multicolumn [ 3, 'l', TEX.new_container [ month_tex, ' ', year, ] ]
-      TEX.push rows, next_cell
-      TEX.push rows, 'H'
-      TEX.push rows, next_cell
-      TEX.push rows, multicolumn [ 1, 'r', 'L', ]
-      TEX.push rows, next_cell
-      TEX.push rows, next_line
-      TEX.push rows, hline
-      wrote_header = yes
-    #.......................................................................................................
-    if ( height = table_row[ 'hi-water-height' ] )?
-      hi_dots.push [ row_idx, height, ]
-    #.......................................................................................................
-    if ( height = table_row[ 'lo-water-height' ] )?
-      lo_dots.push [ row_idx, height, ]
-    #.......................................................................................................
-    if moon_quarter?
-      table_row[ 'moon-quarter' ] = moon_quarter
-      moon_quarter                = null
-    #.......................................................................................................
-    if last_day is table_row[ 'date' ][ 2 ]
-      table_row[ 'is-new-day' ]   = no
-      table_row[ 'date' ]         = null
-      table_row[ 'weekday-idx' ]  = null
-      #.....................................................................................................
-      if table_row[ 'moon-quarter' ]?
-        moon_quarter                = table_row[ 'moon-quarter' ]
-        table_row[ 'moon-quarter' ] = null
-      #.....................................................................................................
-      else
-        moon_quarter                = null
-    #.......................................................................................................
-    else
-      table_row[ 'is-new-day' ]   = yes
-      last_day                    = table_row[ 'date' ][ 2 ]
-    #.......................................................................................................
-    TEX.push rows, @new_row table_row
+    #   # TEX.push rows, multicolumn [ 3, 'l', [ month_tex, year, ], ]
+    #   TEX.push rows, multicolumn [ 3, 'l', TEX.new_container [ month_tex, ' ', year, ] ]
+    #   TEX.push rows, next_cell
+    #   TEX.push rows, 'H'
+    #   TEX.push rows, next_cell
+    #   TEX.push rows, multicolumn [ 1, 'r', 'L', ]
+    #   TEX.push rows, next_cell
+    #   TEX.push rows, next_line
+    #   TEX.push rows, hline
+    #   wrote_header = yes
+    # #.......................................................................................................
+    # if ( height = table_row[ 'hi-water-height' ] )?
+    #   hi_dots.push [ row_idx, height, ]
+    # #.......................................................................................................
+    # if ( height = table_row[ 'lo-water-height' ] )?
+    #   lo_dots.push [ row_idx, height, ]
+    # #.......................................................................................................
+    # if moon_quarter?
+    #   table_row[ 'moon-quarter' ] = moon_quarter
+    #   moon_quarter                = null
+    # #.......................................................................................................
+    # if last_day is table_row[ 'date' ][ 2 ]
+    #   table_row[ 'is-new-day' ]   = no
+    #   table_row[ 'date' ]         = null
+    #   table_row[ 'weekday-idx' ]  = null
+    #   #.....................................................................................................
+    #   if table_row[ 'moon-quarter' ]?
+    #     moon_quarter                = table_row[ 'moon-quarter' ]
+    #     table_row[ 'moon-quarter' ] = null
+    #   #.....................................................................................................
+    #   else
+    #     moon_quarter                = null
+    # #.......................................................................................................
+    # else
+    #   table_row[ 'is-new-day' ]   = yes
+    #   last_day                    = table_row[ 'date' ][ 2 ]
+    # #.......................................................................................................
+    # TEX.push rows, @new_row table_row
 
 ############################################################################################################
 @main() unless module.parent?
