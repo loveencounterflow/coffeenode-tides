@@ -1,131 +1,171 @@
 
-\documentclass[a5paper]{memoir}
-% \documentclass{book}
+\documentclass[a5paper,12pt]{memoir}
 \usepackage{coffeenode-tides}
+\paGaugeSample
+% \usepackage[top-left]{pagegrid}\paShow
+% \newlength{\mytextsize}
+
+%    %This part fails....  (no it doesn't:-)
+%    \makeatletter
+% \show\f@size
+%       \setlength{\mytextsize}{\f@size pt}
+%    \makeatother
+
+% \showthe\mytextsize
 \begin{document}
 
 
-\begin{textblock*}{15mm}[1,0.5](100mm,0.00mm)\flushright  3 : 00\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,2.00mm)\flushright  8 : 59\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,4.00mm)\flushright 15 : 26\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,6.00mm)\flushright 21 : 26\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,8.00mm)\flushright  3 : 50\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,10.00mm)\flushright  9 : 49\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,12.00mm)\flushright 16 : 16\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,14.00mm)\flushright 22 : 16\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,16.00mm)\flushright  4 : 40\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,18.00mm)\flushright 10 : 40\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,20.00mm)\flushright 17 : 06\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,22.00mm)\flushright 23 : 00\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,24.00mm)\flushright  5 : 28\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,26.00mm)\flushright 11 : 25\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,28.00mm)\flushright 17 : 53\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,30.00mm)\flushright 23 : 46\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,32.00mm)\flushright  6 : 13\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,34.00mm)\flushright 12 : 15\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,36.00mm)\flushright 18 : 42\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,38.00mm)\flushright  0 : 31\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,40.00mm)\flushright  7 : 00\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,42.00mm)\flushright 13 : 01\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,44.00mm)\flushright 19 : 27\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,46.00mm)\flushright  1 : 26\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,48.00mm)\flushright  7 : 46\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,50.00mm)\flushright 13 : 56\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,52.00mm)\flushright 20 : 18\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,54.00mm)\flushright  2 : 11\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,56.00mm)\flushright  8 : 35\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,58.00mm)\flushright 14 : 48\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,60.00mm)\flushright 21 : 12\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,62.00mm)\flushright  3 : 10\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,64.00mm)\flushright  9 : 32\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,66.00mm)\flushright 15 : 39\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,68.00mm)\flushright 22 : 15\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,70.00mm)\flushright  4 : 10\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,72.00mm)\flushright 10 : 36\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,74.00mm)\flushright 16 : 51\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,76.00mm)\flushright 23 : 25\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,78.00mm)\flushright  5 : 26\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,80.00mm)\flushright 11 : 50\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,82.00mm)\flushright 18 : 00\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,84.00mm)\flushright  0 : 36\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,86.00mm)\flushright  6 : 36\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,88.00mm)\flushright 13 : 06\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,90.00mm)\flushright 19 : 11\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,92.00mm)\flushright  1 : 38\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,94.00mm)\flushright  7 : 40\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,96.00mm)\flushright 14 : 05\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,98.00mm)\flushright 20 : 06\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,100.00mm)\flushright  2 : 36\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,102.00mm)\flushright  8 : 30\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,104.00mm)\flushright 14 : 55\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,106.00mm)\flushright 20 : 50\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,108.00mm)\flushright  3 : 18\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,110.00mm)\flushright  9 : 16\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,112.00mm)\flushright 15 : 36\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,114.00mm)\flushright 21 : 26\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,116.00mm)\flushright  3 : 52\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,118.00mm)\flushright  9 : 50\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,120.00mm)\flushright 16 : 10\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,122.00mm)\flushright 22 : 01\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,124.00mm)\flushright  4 : 25\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,126.00mm)\flushright 10 : 22\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,128.00mm)\flushright 16 : 39\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,130.00mm)\flushright 22 : 30\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,132.00mm)\flushright  4 : 56\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,134.00mm)\flushright 10 : 56\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,136.00mm)\flushright 17 : 15\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,138.00mm)\flushright 23 : 06\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,140.00mm)\flushright  5 : 26\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,142.00mm)\flushright 11 : 25\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,144.00mm)\flushright 17 : 46\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,146.00mm)\flushright 23 : 36\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,148.00mm)\flushright  5 : 55\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,150.00mm)\flushright 11 : 59\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,152.00mm)\flushright 18 : 18\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,154.00mm)\flushright  0 : 10\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,156.00mm)\flushright  6 : 30\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,158.00mm)\flushright 12 : 36\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,160.00mm)\flushright 18 : 50\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,162.00mm)\flushright  0 : 40\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,164.00mm)\flushright  7 : 06\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,166.00mm)\flushright 13 : 06\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,168.00mm)\flushright 19 : 28\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,170.00mm)\flushright  1 : 16\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,172.00mm)\flushright  7 : 42\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,174.00mm)\flushright 13 : 46\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,176.00mm)\flushright 20 : 09\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,178.00mm)\flushright  1 : 55\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,180.00mm)\flushright  8 : 28\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,182.00mm)\flushright 14 : 29\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,184.00mm)\flushright 21 : 02\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,186.00mm)\flushright  2 : 55\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,188.00mm)\flushright  9 : 28\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,190.00mm)\flushright 15 : 36\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,192.00mm)\flushright 22 : 16\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,194.00mm)\flushright  4 : 06\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,196.00mm)\flushright 10 : 46\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,198.00mm)\flushright 16 : 50\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,200.00mm)\flushright 23 : 25\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,202.00mm)\flushright  5 : 25\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,204.00mm)\flushright 11 : 55\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,206.00mm)\flushright 18 : 05\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,208.00mm)\flushright  0 : 41\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,210.00mm)\flushright  6 : 46\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,212.00mm)\flushright 13 : 10\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,214.00mm)\flushright 19 : 16\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,216.00mm)\flushright  1 : 45\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,218.00mm)\flushright  7 : 45\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,220.00mm)\flushright 14 : 16\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,222.00mm)\flushright 20 : 15\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,224.00mm)\flushright  2 : 46\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,226.00mm)\flushright  8 : 45\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,228.00mm)\flushright 15 : 12\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,230.00mm)\flushright 21 : 09\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,232.00mm)\flushright  3 : 38\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,234.00mm)\flushright  9 : 38\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](100mm,236.00mm)\flushright 16 : 03\gridstrut\end{textblock*}
-\begin{textblock*}{15mm}[1,0.5](110mm,238.00mm)\flushright 22 : 00\gridstrut\end{textblock*}
-% \end{foo}
-% \end{multicols}
+\paRight{20mm}{3.00mm}{ 1}
+\paRight{40mm}{3.00mm}{ 3 : 00}
+\paRight{55mm}{6.00mm}{ 8 : 59}
+\paRight{40mm}{9.00mm}{15 : 26}
+\paRight{55mm}{12.00mm}{21 : 26}
+\paRight{20mm}{15.00mm}{ 2}
+\paRight{40mm}{15.00mm}{ 3 : 50}
+\paRight{55mm}{18.00mm}{ 9 : 49}
+\paRight{40mm}{21.00mm}{16 : 16}
+\paRight{55mm}{24.00mm}{22 : 16}
+\paRight{20mm}{27.00mm}{ 3}
+\paRight{40mm}{27.00mm}{ 4 : 40}
+\paRight{55mm}{30.00mm}{10 : 40}
+\paRight{40mm}{33.00mm}{17 : 06}
+\paRight{55mm}{36.00mm}{23 : 00}
+\paRight{20mm}{39.00mm}{ 4}
+\paRight{40mm}{39.00mm}{ 5 : 28}
+\paRight{55mm}{42.00mm}{11 : 25}
+\paRight{40mm}{45.00mm}{17 : 53}
+\paRight{55mm}{48.00mm}{23 : 46}
+\paRight{20mm}{51.00mm}{ 5}
+\paRight{40mm}{51.00mm}{ 6 : 13}
+\paRight{55mm}{54.00mm}{12 : 15}
+\paRight{40mm}{57.00mm}{18 : 42}
+\paRight{20mm}{60.00mm}{ 6}
+\paRight{55mm}{60.00mm}{ 0 : 31}
+\paRight{40mm}{63.00mm}{ 7 : 00}
+\paRight{55mm}{66.00mm}{13 : 01}
+\paRight{40mm}{69.00mm}{19 : 27}
+\paRight{20mm}{72.00mm}{ 7}
+\paRight{55mm}{72.00mm}{ 1 : 26}
+\paRight{40mm}{75.00mm}{ 7 : 46}
+\paRight{55mm}{78.00mm}{13 : 56}
+\paRight{40mm}{81.00mm}{20 : 18}
+\paRight{20mm}{84.00mm}{ 8}
+\paRight{55mm}{84.00mm}{ 2 : 11}
+\paRight{40mm}{87.00mm}{ 8 : 35}
+\paRight{55mm}{90.00mm}{14 : 48}
+\paRight{40mm}{93.00mm}{21 : 12}
+\paRight{20mm}{96.00mm}{ 9}
+\paRight{55mm}{96.00mm}{ 3 : 10}
+\paRight{40mm}{99.00mm}{ 9 : 32}
+\paRight{55mm}{102.00mm}{15 : 39}
+\paRight{40mm}{105.00mm}{22 : 15}
+\paRight{20mm}{108.00mm}{10}
+\paRight{55mm}{108.00mm}{ 4 : 10}
+\paRight{40mm}{111.00mm}{10 : 36}
+\paRight{55mm}{114.00mm}{16 : 51}
+\paRight{40mm}{117.00mm}{23 : 25}
+\paRight{20mm}{120.00mm}{11}
+\paRight{55mm}{120.00mm}{ 5 : 26}
+\paRight{40mm}{123.00mm}{11 : 50}
+\paRight{55mm}{126.00mm}{18 : 00}
+\paRight{20mm}{129.00mm}{12}
+\paRight{40mm}{129.00mm}{ 0 : 36}
+\paRight{55mm}{132.00mm}{ 6 : 36}
+\paRight{40mm}{135.00mm}{13 : 06}
+\paRight{55mm}{138.00mm}{19 : 11}
+\paRight{20mm}{141.00mm}{13}
+\paRight{40mm}{141.00mm}{ 1 : 38}
+\paRight{55mm}{144.00mm}{ 7 : 40}
+\paRight{40mm}{147.00mm}{14 : 05}
+\paRight{55mm}{150.00mm}{20 : 06}
+\paRight{20mm}{153.00mm}{14}
+\paRight{40mm}{153.00mm}{ 2 : 36}
+\paRight{55mm}{156.00mm}{ 8 : 30}
+\paRight{40mm}{159.00mm}{14 : 55}
+\paRight{55mm}{162.00mm}{20 : 50}
+\paRight{20mm}{165.00mm}{15}
+\paRight{40mm}{165.00mm}{ 3 : 18}
+\paRight{55mm}{168.00mm}{ 9 : 16}
+\paRight{40mm}{171.00mm}{15 : 36}
+\paRight{55mm}{174.00mm}{21 : 26}
+\paRight{20mm}{177.00mm}{16}
+\paRight{40mm}{177.00mm}{ 3 : 52}
+\paRight{55mm}{180.00mm}{ 9 : 50}
+\paRight{40mm}{183.00mm}{16 : 10}
+\paRight{55mm}{186.00mm}{22 : 01}
+\paRight{20mm}{189.00mm}{17}
+\paRight{40mm}{189.00mm}{ 4 : 25}
+\paRight{55mm}{192.00mm}{10 : 22}
+\paRight{40mm}{195.00mm}{16 : 39}
+\paRight{55mm}{198.00mm}{22 : 30}
+\paRight{20mm}{201.00mm}{18}
+\paRight{40mm}{201.00mm}{ 4 : 56}
+\paRight{55mm}{204.00mm}{10 : 56}
+\paRight{40mm}{207.00mm}{17 : 15}
+\paRight{55mm}{210.00mm}{23 : 06}
+\paRight{20mm}{213.00mm}{19}
+\paRight{40mm}{213.00mm}{ 5 : 26}
+\paRight{55mm}{216.00mm}{11 : 25}
+\paRight{40mm}{219.00mm}{17 : 46}
+\paRight{55mm}{222.00mm}{23 : 36}
+\paRight{20mm}{225.00mm}{20}
+\paRight{40mm}{225.00mm}{ 5 : 55}
+\paRight{55mm}{228.00mm}{11 : 59}
+\paRight{40mm}{231.00mm}{18 : 18}
+\paRight{20mm}{234.00mm}{21}
+\paRight{55mm}{234.00mm}{ 0 : 10}
+\paRight{40mm}{237.00mm}{ 6 : 30}
+\paRight{55mm}{240.00mm}{12 : 36}
+\paRight{40mm}{243.00mm}{18 : 50}
+\paRight{20mm}{246.00mm}{22}
+\paRight{55mm}{246.00mm}{ 0 : 40}
+\paRight{40mm}{249.00mm}{ 7 : 06}
+\paRight{55mm}{252.00mm}{13 : 06}
+\paRight{40mm}{255.00mm}{19 : 28}
+\paRight{20mm}{258.00mm}{23}
+\paRight{55mm}{258.00mm}{ 1 : 16}
+\paRight{40mm}{261.00mm}{ 7 : 42}
+\paRight{55mm}{264.00mm}{13 : 46}
+\paRight{40mm}{267.00mm}{20 : 09}
+\paRight{20mm}{270.00mm}{24}
+\paRight{55mm}{270.00mm}{ 1 : 55}
+\paRight{40mm}{273.00mm}{ 8 : 28}
+\paRight{55mm}{276.00mm}{14 : 29}
+\paRight{40mm}{279.00mm}{21 : 02}
+\paRight{20mm}{282.00mm}{25}
+\paRight{55mm}{282.00mm}{ 2 : 55}
+\paRight{40mm}{285.00mm}{ 9 : 28}
+\paRight{55mm}{288.00mm}{15 : 36}
+\paRight{40mm}{291.00mm}{22 : 16}
+\paRight{20mm}{294.00mm}{26}
+\paRight{55mm}{294.00mm}{ 4 : 06}
+\paRight{40mm}{297.00mm}{10 : 46}
+\paRight{55mm}{300.00mm}{16 : 50}
+\paRight{40mm}{303.00mm}{23 : 25}
+\paRight{20mm}{306.00mm}{27}
+\paRight{55mm}{306.00mm}{ 5 : 25}
+\paRight{40mm}{309.00mm}{11 : 55}
+\paRight{55mm}{312.00mm}{18 : 05}
+\paRight{20mm}{315.00mm}{28}
+\paRight{40mm}{315.00mm}{ 0 : 41}
+\paRight{55mm}{318.00mm}{ 6 : 46}
+\paRight{40mm}{321.00mm}{13 : 10}
+\paRight{55mm}{324.00mm}{19 : 16}
+\paRight{20mm}{327.00mm}{29}
+\paRight{40mm}{327.00mm}{ 1 : 45}
+\paRight{55mm}{330.00mm}{ 7 : 45}
+\paRight{40mm}{333.00mm}{14 : 16}
+\paRight{55mm}{336.00mm}{20 : 15}
+\paRight{20mm}{339.00mm}{30}
+\paRight{40mm}{339.00mm}{ 2 : 46}
+\paRight{55mm}{342.00mm}{ 8 : 45}
+\paRight{40mm}{345.00mm}{15 : 12}
+\paRight{55mm}{348.00mm}{21 : 09}
+\paRight{20mm}{351.00mm}{31}
+\paRight{40mm}{351.00mm}{ 3 : 38}
+\paRight{55mm}{354.00mm}{ 9 : 38}
+\paRight{40mm}{357.00mm}{16 : 03}
+\paRight{55mm}{360.00mm}{22 : 00}
+
 \end{document}
 
