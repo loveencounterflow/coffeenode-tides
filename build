@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
-# node coffeenode-tides/lib/write-tex.js > coffeenode-tides/tex-outputs/calendar.tex && \
-xelatex --output-directory coffeenode-tides/tex-outputs --halt-on-error --enable-write18 --recorder coffeenode-tides/tex-outputs/calendar.tex && \
+node coffeenode-tides/lib/write-tex.js > coffeenode-tides/tex-outputs/calendar.tex && \
+xelatex \
+	--output-directory coffeenode-tides/tex-outputs \
+	--halt-on-error \
+	--enable-write18 \
+	--recorder \
+	coffeenode-tides/tex-outputs/calendar.tex && \
 mv coffeenode-tides/tex-outputs/calendar.pdf coffeenode-tides
 
 
