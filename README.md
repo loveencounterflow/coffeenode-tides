@@ -1,5 +1,16 @@
 
 
+- [CoffeeNode Tides](#coffeenode-tides)
+	- [Observations](#observations)
+	- [License (Must Read)](#license-must-read)
+	- [Disclaimer (Must Read)](#disclaimer-must-read)
+		- [Disclaimer for CoffeeNode Tides](#disclaimer-for-coffeenode-tides)
+		- [Disclaimer from Rijkswaterstaat](#disclaimer-from-rijkswaterstaat)
+		- [Disclaimer from XTide](#disclaimer-from-xtide)
+
+> **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+
+
 ## CoffeeNode Tides
 
 CoffeeNode Tides is a (Xe)(La)TeX source generator to produce typographically appealing and moderately complex
@@ -46,6 +57,12 @@ You'll immediately notice some flaws here:
   Currently i use the [`hobby`](http://ftp.uni-erlangen.de/mirrors/CTAN/graphics/pgf/contrib/hobby/hobby_doc.pdf)
   package to draw the curves; it is reasonably simple to use, but takes a considerable time to get each
   curve drawn, so maybe i'll look for a way to do this outside of TeX.
+
+### Observations
+
+There are always 54, 58, or 62 HL-times between a day with a new or full moon and the following day with
+a full or new moon.
+
 
 ### License (Must Read)
 

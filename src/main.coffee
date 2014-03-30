@@ -34,7 +34,7 @@ XDate                     = require 'xdate'
 
 
 #-----------------------------------------------------------------------------------------------------------
-@new_tidal_record = ( source_line_nr, moon_quarter, date, time, hl, height ) ->
+@new_tidal_record = ( source_line_nr, moon_quarter, date, time, is_dst, hl, height ) ->
   R =
     '~isa':             'GEZEITEN/tidal-record'
     'source-line-nr':   source_line_nr
@@ -42,6 +42,7 @@ XDate                     = require 'xdate'
     'weekday-idx':      null
     'date':             date
     'time':             time
+    'is-dst':           is_dst
     'hl':               hl
     'height':           height
   #.........................................................................................................
@@ -62,14 +63,26 @@ XDate                     = require 'xdate'
   #---------------------------------------------------------------------------------------------------------
   return null
 
+new_and_full_moons = []
+
 #-----------------------------------------------------------------------------------------------------------
 @walk_tidal_records = ( route, handler ) ->
+  record_idx = -1
   #---------------------------------------------------------------------------------------------------------
   @walk_tidal_raw_fields route, ( error, fields, source_line, source_line_nr ) =>
     return handler error if error?
-    return handler null, null if fields is null
     #.......................................................................................................
-    columns = []
+    if fields is null
+      debug new_and_full_moons
+      last_record_idx = null
+      for this_record_idx, idx in new_and_full_moons
+        if last_record_idx?
+          info this_record_idx - last_record_idx
+        last_record_idx = this_record_idx
+      return handler null, null
+    #.......................................................................................................
+    columns     = []
+    record_idx += 1
     #.......................................................................................................
     switch field_count = fields.length
       #.....................................................................................................
@@ -94,13 +107,23 @@ XDate                     = require 'xdate'
     [ day_txt, month_txt, year_txt, ] = date_txt.split '/'
     [ hour_txt, minute_txt,         ] = time_txt.split ':'
     #.......................................................................................................
+    is_dst = no
+    if /\+$/.test minute_txt
+      minute_txt    = minute_txt[ ... minute_txt.length - 1 ]
+      is_dst        = yes
+    #.......................................................................................................
     hour_txt      =  hour_txt.replace /^0/, ' '
     day_txt       =   day_txt.replace /^0/, ' '
     month_txt     = month_txt.replace /^0/, ' '
-    moon_quarter  = if moon_phase? then @moon_quarter_by_phases[ moon_phase ] else null
     height        = parseInt height_txt, 10
     date          = [ year_txt, month_txt, day_txt, ]
     time          = [ hour_txt, minute_txt, ]
+    #.......................................................................................................
+    moon_quarter  = null
+    if moon_phase?
+      moon_quarter  = @moon_quarter_by_phases[ moon_phase ]
+      if moon_quarter is 0 or moon_quarter is 2
+        new_and_full_moons.push record_idx
     #.......................................................................................................
     switch tide
       when 'LW' then hl = 'l'
@@ -108,7 +131,7 @@ XDate                     = require 'xdate'
       else
         return handler new Error "unable to parse tide entry on line #{source_line_nr}: #{rpr tide}"
     #.......................................................................................................
-    Z = @new_tidal_record source_line_nr, moon_quarter, date, time, hl, height
+    Z = @new_tidal_record source_line_nr, moon_quarter, date, time, is_dst, hl, height
     #.......................................................................................................
     ### TAINT this procedure will likely work if the place of processing is in the same timezone as the
     place where the given data refers to; in the more general case, however, JavaScript as running in NodeJS

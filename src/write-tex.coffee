@@ -64,10 +64,14 @@ thinspace                 = '\u2009'
 @moon_symbols =
   'unicode': [ '⬤', '◐', '◯', '◑', ]
   'plain':    [
-    ( TEX.raw '\\newmoon'   ),
-    ( TEX.raw '\\rightmoon' ),
-    ( TEX.raw '\\fullmoon'  ),
-    ( TEX.raw '\\leftmoon'  ), ]
+    '\\newmoon'
+    '\\rightmoon'
+    '\\fullmoon'
+    '\\leftmoon' ]
+    # ( TEX.raw '\\newmoon'   ),
+    # ( TEX.raw '\\rightmoon' ),
+    # ( TEX.raw '\\fullmoon'  ),
+    # ( TEX.raw '\\leftmoon'  ), ]
 
 #-----------------------------------------------------------------------------------------------------------
 @weekday_names =
@@ -233,10 +237,9 @@ thinspace                 = '\u2009'
 ###
 
 #-----------------------------------------------------------------------------------------------------------
-@y_position_from_datetime = ( row_idx, day_idx, time, module, unit = 'mm' ) ->
+@y_position_from_datetime = ( row_idx, time, module, unit = 'mm' ) ->
   ### TAINT use proper units datatype ###
   ### TAINT make prescision configurable ###
-  # value = ( ( day_idx * 24 + ( @_as_integer time[ 0 ] ) ) * 60 + @_as_integer time[ 1 ] ) * module
   value = ( row_idx + 1 ) * module
   value = value.toFixed 2
   return "#{value}#{unit}"
@@ -247,7 +250,6 @@ thinspace                 = '\u2009'
   route         = njs_path.join __dirname, '../tidal-data/Yerseke.txt'
   rows          = TEX.new_container []
   row_idx       = -1
-  day_idx       = -1
   hi_dots       = []
   lo_dots       = []
   last_day      = null
@@ -270,20 +272,37 @@ thinspace                 = '\u2009'
     [ this_year
       this_month
       this_day    ] = this_date
-    return null unless this_month is ' 1'
+    # return null unless this_month is ' 1' # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     #.......................................................................................................
     unless wrote_header
       this_month_tex = @format_month this_month
       wrote_header = yes
     #.......................................................................................................
-    y_position = @y_position_from_datetime row_idx, day_idx, this_time, 3, 'mm'
+    if ( moon_quarter = trc[ 'moon-quarter' ] )?
+      if moon_quarter is 0 or moon_quarter is 2
+        ### TAINT collect these in a 'newpage' function ###
+        echo """\\null\\newpage""" # see https://github.com/loveencounterflow/cxltx-styles#absolute-positioning-and-page-breaks
+        row_idx = 0
+    #.......................................................................................................
+    ### TAINT module should be defined in options ###
+    textheight  = 178 # mm
+    line_count  = 62
+    module      = textheight / line_count
+    unit        = 'mm'
+    y_position  = @y_position_from_datetime row_idx, this_time, module, unit
+    #.......................................................................................................
+    ### TAINT Unfortunate solution to again ask for moon quarter ###
+    if moon_quarter?
+      moon_symbol = @moon_symbols[ 'plain' ][ moon_quarter ]
+      echo """\\paRight{10mm}{#{y_position}}{#{moon_symbol}}"""
     #.......................................................................................................
     unless last_day is this_day
       last_day  = this_day
-      day_idx  += 1
       ### TAINT days y to be adjusted ###
-      echo """\\paRight{20mm}{#{y_position}}{#{this_date[2]}}"""
+      echo """\\paRight{20mm}{#{y_position}}{#{this_date[1]}-#{this_date[2]}}"""
+      echo """\\typeout{#{this_date.join '-'}}"""
     #.......................................................................................................
+    # debug trc
     switch hl = trc[ 'hl' ]
       when 'h'
         x_position = '40mm'
@@ -293,8 +312,8 @@ thinspace                 = '\u2009'
         throw new Error "expected `h` or `l` for hl indicator, got #{rpr hl}"
     #.......................................................................................................
     ### TAINT use proper escaping ###
-    echo """\\paRight{#{x_position}}{#{y_position}}{#{this_time[0]} : #{this_time[1]}}"""
-
+    dst = if trc[ 'is-dst' ] then '+' else ''
+    echo """\\paRight{#{x_position}}{#{y_position}}{#{dst + this_time[0]} : #{this_time[1]}}"""
 
 
 
@@ -347,6 +366,7 @@ thinspace                 = '\u2009'
 # foo = TEX.make_multicommand 'foo', 3
 # info foo [ 'helo', 'world', '!' ]
 # info TEX.rpr foo [ 'helo', 'world', '!' ]
+
 
 
 
