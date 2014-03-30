@@ -73,7 +73,7 @@ new_and_full_moons = []
     return handler error if error?
     #.......................................................................................................
     if fields is null
-      debug new_and_full_moons
+      debug new_and_full_moons # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       last_record_idx = null
       for this_record_idx, idx in new_and_full_moons
         if last_record_idx?

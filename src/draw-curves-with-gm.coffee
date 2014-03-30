@@ -21,195 +21,114 @@ help                      = TRM.get_logger 'help',      badge
 echo                      = TRM.echo.bind TRM
 GM                        = require 'gm'
 
-
-
-
-
-hl_raw_dots = [
-  [
-    [ 1, 247 ]
-    [ 2, 257 ]
-    [ 3, 245 ]
-    [ 4, 262 ]
-    [ 5, 241 ]
-    [ 6, 267 ]
-    [ 7, 237 ]
-    [ 8, 269 ]
-    [ 9, 233 ]
-    [ 10, 269 ]
-    [ 11, 228 ]
-    [ 12, 265 ]
-    [ 13, 223 ]
-    [ 14, 258 ]
-    [ 15, 218 ]
-    [ 16, 248 ]
-    [ 17, 214 ]
-    [ 18, 237 ]
-    [ 19, 211 ]
-    [ 20, 228 ]
-    [ 21, 213 ]
-    [ 22, 225 ]
-    [ 23, 222 ]
-    [ 24, 227 ]
-    [ 25, 233 ]
-    [ 26, 230 ]
-    [ 27, 241 ]
-    [ 28, 229 ]
-    [ 29, 245 ]
-    [ 30, 227 ]
-    [ 31, 248 ]
-    [ 32, 227 ]
-    [ 33, 251 ]
-    [ 34, 227 ]
-    [ 35, 253 ]
-    [ 36, 227 ]
-    [ 37, 253 ]
-    [ 38, 225 ]
-    [ 39, 250 ]
-    [ 40, 222 ]
-    [ 41, 246 ]
-    [ 42, 218 ]
-    [ 43, 242 ]
-    [ 44, 215 ]
-    [ 45, 237 ]
-    [ 46, 212 ]
-    [ 47, 231 ]
-    [ 48, 209 ]
-    [ 49, 225 ]
-    [ 50, 210 ]
-    [ 51, 223 ]
-    [ 52, 220 ]
-    [ 53, 228 ]
-    [ 54, 234 ]
-    [ 55, 234 ]
-    [ 56, 247 ]
-    [ 57, 237 ]
-    [ 58, 257 ]
-    [ 59, 237 ]
-    [ 60, 263 ]
-  ],
-  [
-    [ 0, 42 ]
-    [ 1, 39 ]
-    [ 2, 35 ]
-    [ 3, 35 ]
-    [ 4, 30 ]
-    [ 5, 31 ]
-    [ 6, 27 ]
-    [ 7, 28 ]
-    [ 8, 27 ]
-    [ 9, 26 ]
-    [ 10, 30 ]
-    [ 11, 28 ]
-    [ 12, 38 ]
-    [ 13, 33 ]
-    [ 14, 47 ]
-    [ 15, 42 ]
-    [ 16, 58 ]
-    [ 17, 53 ]
-    [ 18, 67 ]
-    [ 19, 62 ]
-    [ 20, 72 ]
-    [ 21, 65 ]
-    [ 22, 69 ]
-    [ 23, 61 ]
-    [ 24, 62 ]
-    [ 25, 54 ]
-    [ 26, 55 ]
-    [ 27, 50 ]
-    [ 28, 51 ]
-    [ 29, 49 ]
-    [ 30, 48 ]
-    [ 31, 49 ]
-    [ 32, 45 ]
-    [ 33, 47 ]
-    [ 34, 41 ]
-    [ 35, 45 ]
-    [ 36, 38 ]
-    [ 37, 45 ]
-    [ 38, 39 ]
-    [ 39, 46 ]
-    [ 40, 41 ]
-    [ 41, 49 ]
-    [ 42, 45 ]
-    [ 43, 53 ]
-    [ 44, 48 ]
-    [ 45, 56 ]
-    [ 46, 54 ]
-    [ 47, 61 ]
-    [ 48, 60 ]
-    [ 49, 64 ]
-    [ 50, 63 ]
-    [ 51, 62 ]
-    [ 52, 58 ]
-    [ 53, 54 ]
-    [ 54, 48 ]
-    [ 55, 45 ]
-    [ 56, 37 ]
-    [ 57, 36 ]
-    [ 58, 27 ]
-    [ 59, 27 ]
-  ] ]
+options =
+  'pixels-per-mm':    15
+  'width.mm':         118
+  'height.mm':        178
+  'width.px':         null
+  'height.px':        null
+  ### TAINT this value from `write-tex#module` ###
+  'line-height.mm':   2.871
+  'line-height.px':   null
+  'x-offset.mm':      90
+  'x-offset.px':      null
 
 #-----------------------------------------------------------------------------------------------------------
-module.exports = @_draw_curves_with_gm = ( hi_dots, lo_dots, handler ) ->
+@_compile_options = ( options ) ->
+  options[ 'width.px'       ] = options[ 'width.mm'       ] * options[ 'pixels-per-mm' ]
+  options[ 'height.px'      ] = options[ 'height.mm'      ] * options[ 'pixels-per-mm' ]
+  options[ 'line-height.px' ] = options[ 'line-height.mm' ] * options[ 'pixels-per-mm' ]
+  options[ 'x-offset.px'    ] = options[ 'x-offset.mm'    ] * options[ 'pixels-per-mm' ]
+
+#-----------------------------------------------------------------------------------------------------------
+@_image_px_from_origin_mm = ( d_mm ) ->
+  return d_mm * options[ 'pixels-per-mm' ]
+
+#-----------------------------------------------------------------------------------------------------------
+@_image_px_from_real_cm = ( x_real_cm ) ->
+  ### TAINT magic number 14 ###
+  return options[ 'x-offset.px' ] - x_real_cm * options[ 'pixels-per-mm' ] / 14
+
+#-----------------------------------------------------------------------------------------------------------
+@_image_px_from_y_raw = ( y_raw ) ->
+  ### TAINT make configurable ###
+  return ( 0.75 + y_raw ) * options[ 'line-height.px' ]
+
+#-----------------------------------------------------------------------------------------------------------
+module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
   ### Given the series for line indices and water level maxima and minima (in cm relative to LAT), return
   a LaTeX snippet to include the respective image file. Missing image files will be generated on the fly.
   ###
-
-  for dot in raw_dots
-    [ dot[ 1 ], dot[ 0 ] ] = dot
-    dot[ 0 ] = Math.floor ( ( dot[ 0 ] +  0 ) *  10 ) + 100 + 0.5
-    dot[ 1 ] = Math.floor ( ( dot[ 1 ] +  0 ) *  50 ) +   0 + 0.5
-
-
-  # hl_bezier_dots = raw_dots
   bezier_dots = []
-  for dot0, idx in raw_dots
-    dot3 = raw_dots[ idx + 1 ]
-    break unless dot3?
-    [ x0, y0, ] = dot0
-    [ x3, y3, ] = dot3
+  #.........................................................................................................
+  for raw_dot0, idx in raw_dots
+    [ hl0, [ x0_real_cm, y0_raw, ], ] = raw_dot0
+    # [ dot[ 1 ], dot[ 0 ] ] = dot
+    # dot[ 0 ] = Math.floor ( ( dot[ 0 ] +  0 ) *  10 ) + 100 + 0.5
+    # dot[ 1 ] = Math.floor ( ( dot[ 1 ] +  0 ) *  50 ) +   0 + 0.5
+    raw_dot3 = raw_dots[ idx + 1 ]
+    break unless raw_dot3?
+    [ hl3, [ x3_real_cm, y3_raw, ], ] = raw_dot3
+    #.......................................................................................................
+    x0 = @_image_px_from_real_cm  x0_real_cm
+    y0 = @_image_px_from_y_raw    y0_raw
+    x3 = @_image_px_from_real_cm  x3_real_cm
+    y3 = @_image_px_from_y_raw    y3_raw
+    #.......................................................................................................
     y1 = y2 = Math.floor ( y0 + y3 ) / 2 + 0.5
     x1 = x0
     x2 = x3
-    bezier_dots.push [ dot0, [ x1, y1, ], [ x2, y2, ], dot3, ]
-
-  dir = '/tmp'
-
-  # GM 1000, 1000, "#00ff55aa"
-  image = GM 500, 3000, "#ffffff00"
+    bezier_dots.push [ hl0, [ x0, y0, ], [ x1, y1, ], [ x2, y2, ], [ x3, y3, ], ]
+  #.........................................................................................................
+  ### TAINT ratio pixels / mm should be configurable ###
+  image = GM options[ 'width.px' ], options[ 'height.px' ], "#ffffffff"
     .fontSize 68
     # .stroke "#ff5533", 5
     # .stroke "#ff5533", 1
     # .fill '#123456'
     .fill 'transparent'
-    .stroke "red", 1
+    .stroke "black", 2
+  #.........................................................................................................
+  ### draw LAT vertical ###
+  x0 = x1 = @_image_px_from_real_cm 0
+  y0 = @_image_px_from_y_raw  0
+  y1 = @_image_px_from_y_raw 60
+  image.drawLine x0, y0, x1, y1
+  #.........................................................................................................
+  ### draw NAP vertical ###
+  ### TAINT must get NAP - LAT difference from RWS for each location ###
+  x0 = x1 = @_image_px_from_real_cm 0 + 203
+  y0 = @_image_px_from_y_raw  0
+  y1 = @_image_px_from_y_raw 60
+  image.drawLine x0, y0, x1, y1
+  #.........................................................................................................
+  for hl_dots, idx in bezier_dots
+    [ hl, dots... ] = hl_dots
+    image.drawBezier dots...
+    ### draw HL horizontal ###
+    if idx is 0
+      x0 = @_image_px_from_real_cm 0
+    else
+      x0 = dots[ 0 ][ 0 ]
+    ### TAINT these numbers also in `write-tex`; save in options ###
+    x1 = @_image_px_from_origin_mm ( if hl is 'h' then 40 else 55 ) + 1
+    y0 = y1 = dots[ 0 ][ 1 ]
+    # image.drawLine x0, y0, x1, y1
 
-  for bezier_dots in hl_bezier_dots
-    for dots in bezier_dots
-      image.drawBezier dots...
+  #.........................................................................................................
+  image.write route, ( error ) ->
+    return handler error if error?
+    # log @outname + " created :: " + arguments[3]
+    handler null
+  #.........................................................................................................
+  return null
 
-  # image.fill 'blue'
-  for bezier_dots in hl_bezier_dots
-    for dots in hl_bezier_dots
-      ### TAINT leaving out last dot ###
-      dot0 = dots[ 0 ]
-      dot1 = [ dot0[ 0 ] + 2, dot0[ 1 ], ]
-      debug dot1
-      # image.drawCircle dot0..., dot1...
-
-  image.write dir + "/new.png", ( error ) ->
-      throw error if error?
-      console.log @outname + " created :: " + arguments[3]
-      return
-
-#-----------------------------------------------------------------------------------------------------------
-@main = ->
-  throw new error "not implemented"
 
 ############################################################################################################
-@main() unless module.parent?
+@_compile_options options
+module.exports = module.exports.bind @
 
 
+d = ( x for x in k )
 
+d = k[ ... ]

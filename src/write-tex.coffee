@@ -23,7 +23,7 @@ eventually                = process.nextTick
 # XDate                     = require 'xdate'
 TEX                       = require 'jizura-xelatex'
 TIDES                     = require './main'
-@draw_curves_with_hobby   = require './draw-curves-with-gm'
+@_draw_curves_with_gm     = require './draw-curves-with-gm'
 #...........................................................................................................
 read = ( route ) ->
   return njs_fs.readFileSync ( njs_path.join __dirname, route ), encoding: 'utf-8'
@@ -168,73 +168,8 @@ thinspace                 = '\u2009'
   return R
 
 #-----------------------------------------------------------------------------------------------------------
-@draw_curves = ( hi_dots, lo_dots, handler ) ->
-  warn "`write-tex#draw_curves` must use options object; not yet implemented"
-  return handler null, 'CURVES OMITTED'
-  method = @[ "draw_curves_with_#{image_format}" ]
-  throw new Error "unknown image format #{image_format}" unless method?
-  method = method.bind @
-  return method hi_dots, lo_dots, handler
-
-# #-----------------------------------------------------------------------------------------------------------
-# @draw_curves_with_gm = ( hi_dots, lo_dots ) ->
-#   R = ''
-#   for collection in [ hi_dots, lo_dots, ]
-#     dots = []
-#     debug '--------------------------------------------'
-#     for [ idx, height ] in collection
-#       debug [ height, idx ]
-#   return R
-
-#-----------------------------------------------------------------------------------------------------------
-@draw_curves_with_hobby = ( hi_dots, lo_dots, handler ) ->
-  ### Given the series for line indices and water level maxima and minima (in cm relative to LAT), return
-  a LaTeX snippet to generate curves using the `hobby` package.
-
-  **Note** This code is no longer maintained and has been left here for future reference only. It is
-  somehwat slow and conceptually more difficult to get right than using the `gm` module; it also does not
-  allow to easily cache results between runs, so all the computation has to be done on each run anew.
-  It also violates the principle that computation-heavy stuff with complex logics should be done outside
-  of LaTeX, which is not really built to do that kind of stuff. ###
-  throw new Error """code no longer maintained; please read comments in
-    `src/main.coffee#draw_curves_with_hobby` to learn why."""
-  R = TEX.new_container []
-  TEX.push R, TEX.raw "\\begin{tikzpicture}[scale=1,x=0.1mm,y=-1em]%\n"
-  for collection in [ hi_dots, lo_dots, ]
-    dots = []
-    for [ idx, height ] in collection
-      dot_txt = "(#{height},#{idx})"
-      TEX.push R, TEX.raw "\\filldraw #{dot_txt} circle (1pt);%\n"
-      dots.push dot_txt
-    first_dot = dots.shift()
-    last_dot  = dots.pop()
-    TEX.push R, TEX.raw """\\draw #{first_dot} to
-      [ curve through ={#{dots.join ' .. '}}]
-      #{last_dot};"""
-  TEX.push R, TEX.raw "\\end{tikzpicture}"
-  return R
-
-###
-\multicolumn{3}{l}{{\color{DarkRed}\scFont\large Januari} 2014} & H & L & \\
-
-\draw ([in angle=90, out angle=-90]99,1) to
-[ curve through ={(109,2) .. (97,3) .. (114,4) .. (93,5) .. (119,6) .. (89,7) .. (121,8) .. (85,9) .. (121,10) .. (80,11) .. (117,12) .. (75,13) .. (110,14) .. (70,15) .. (100,16) .. (66,17) .. (89,18) .. (63,19) .. (80,20) .. (65,21) .. (77,22) .. (74,23) .. (79,24) .. (85,25) .. (82,26) .. (93,27) .. (81,28) .. (97,29) .. (79,30) .. (100,31) .. (79,32) .. (103,33) .. (79,34) .. (105,35) .. (79,36) .. (105,37) .. (77,38) .. (102,39) .. (74,40) .. (98,41) .. (70,42) .. (94,43) .. (67,44) .. (89,45) .. (64,46) .. (83,47) .. (61,48) .. (77,49) .. (62,50) .. (75,51) .. (72,52) .. (80,53) .. (86,54) .. (86,55) .. (99,56) .. (89,57) .. (109,58) .. (89,59) .. (115,60) .. (88,61) .. (119,62) .. (87,63) .. (121,64) .. (85,65) .. (119,66) .. (82,67) .. (112,68) .. (78,69) .. (101,70)}]
-(72,71);
-\draw ([in angle=90, out angle=-90]-106,0) to
-[ curve through ={(-109,1) .. (-113,2) .. (-113,3) .. (-118,4) .. (-117,5) .. (-121,6) .. (-120,7) .. (-121,8) .. (-122,9) .. (-118,10) .. (-120,11) .. (-110,12) .. (-115,13) .. (-101,14) .. (-106,15) .. (-90,16) .. (-95,17) .. (-81,18) .. (-86,19) .. (-76,20) .. (-83,21) .. (-79,22) .. (-87,23) .. (-86,24) .. (-94,25) .. (-93,26) .. (-98,27) .. (-97,28) .. (-99,29) .. (-100,30) .. (-99,31) .. (-103,32) .. (-101,33) .. (-107,34) .. (-103,35) .. (-110,36) .. (-103,37) .. (-109,38) .. (-102,39) .. (-107,40) .. (-99,41) .. (-103,42) .. (-95,43) .. (-100,44) .. (-92,45) .. (-94,46) .. (-87,47) .. (-88,48) .. (-84,49) .. (-85,50) .. (-86,51) .. (-90,52) .. (-94,53) .. (-100,54) .. (-103,55) .. (-111,56) .. (-112,57) .. (-121,58) .. (-121,59) .. (-128,60) .. (-128,61) .. (-131,62) .. (-134,63) .. (-131,64) .. (-137,65) .. (-126,66) .. (-135,67) .. (-117,68) .. (-127,69)}]
-(-105,70);
-
-\multirow{10}{*}{%
-\begin{tikzpicture}[scale=1,x=0.1mm,y=-3em]%
-\filldraw (0,0) circle (1pt);%
-\filldraw (-100,1) circle (1pt);%
-\filldraw (100,2) circle (1pt);%
-\filldraw (1,3) circle (1pt);%
-\filldraw (3,4) circle (1pt);%
-\filldraw (3,5) circle (1pt);%
-\draw (0,0) to [ quick curve through ={(-100,1) .. (100,2) .. (1,3) .. (3,4)}] (3,5);%
-\end{tikzpicture}} \\
-###
+@draw_curves = ( page_nr, dots, handler ) ->
+  return @_draw_curves_with_gm page_nr, dots, handler
 
 #-----------------------------------------------------------------------------------------------------------
 @y_position_from_datetime = ( row_idx, time, module, unit = 'mm' ) ->
@@ -250,9 +185,11 @@ thinspace                 = '\u2009'
   route         = njs_path.join __dirname, '../tidal-data/Yerseke.txt'
   rows          = TEX.new_container []
   row_idx       = -1
-  hi_dots       = []
-  lo_dots       = []
+  dots          = []
+  page_nr       = 0
   last_day      = null
+  last_month    = null
+  last_year     = null
   moon_quarter  = null
   wrote_header  = no
   echo preamble
@@ -281,10 +218,24 @@ thinspace                 = '\u2009'
     if ( moon_quarter = trc[ 'moon-quarter' ] )?
       if moon_quarter is 0 or moon_quarter is 2
         ### TAINT collect these in a 'newpage' function ###
-        echo """\\null\\newpage""" # see https://github.com/loveencounterflow/cxltx-styles#absolute-positioning-and-page-breaks
-        row_idx = 0
+        row_idx   = 0
+        page_nr  += 1
+        #---------------------------------------------------------------------------------------------------
+        do ( page_nr, dots ) =>
+          #-------------------------------------------------------------------------------------------------
+          ### TAINT asynchronous handling is missing ###
+          info "drawing image #{page_nr}"
+          route = njs_path.join '/tmp', "tides-p#{page_nr}.png"
+          # echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[height=178mm]{#{route}}}"""
+          echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[width=118mm]{#{route}}}"""
+          @draw_curves route, dots, ( error ) =>
+            info "image #{page_nr} ok"
+            throw error if error?
+        #---------------------------------------------------------------------------------------------------
+        dots      = []
+        echo """\\null\\newpage"""
     #.......................................................................................................
-    ### TAINT module should be defined in options ###
+    ### TAINT measurements should be defined in options ###
     textheight  = 178 # mm
     line_count  = 62
     module      = textheight / line_count
@@ -300,10 +251,16 @@ thinspace                 = '\u2009'
       last_day  = this_day
       ### TAINT days y to be adjusted ###
       echo """\\paRight{20mm}{#{y_position}}{#{this_date[1]}-#{this_date[2]}}"""
-      echo """\\typeout{#{this_date.join '-'}}"""
     #.......................................................................................................
-    # debug trc
-    switch hl = trc[ 'hl' ]
+    unless last_month is this_month
+      last_month = this_month
+      echo """\\typeout{\\trmSolCyan{#{this_date.join '-'}}}"""
+    #.......................................................................................................
+    hl      = trc[ 'hl' ]
+    height  = trc[ 'height' ]
+    dots.push [ hl, [ height, dots.length, ], ]
+    #.......................................................................................................
+    switch hl
       when 'h'
         x_position = '40mm'
       when 'l'

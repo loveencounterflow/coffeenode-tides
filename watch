@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-coffee --watch --output /QUICK/tides/lib --compile /QUICK/tides/src
+./node_modules/coffee-script/bin/coffee --watch --output /QUICK/tides/lib --compile /QUICK/tides/src
 
 
