@@ -128,7 +128,15 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
 @_compile_options options
 module.exports = module.exports.bind @
 
+x = 42
 
-d = ( x for x in k )
+f = ->
+  # x = 8
+  f ( error, result, x ) =>
+    # @d = 1
+    x = 108
+    # x = 8+5
+    return null
 
-d = k[ ... ]
+
+
