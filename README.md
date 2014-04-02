@@ -17,11 +17,15 @@ CoffeeNode Tides is a (Xe)(La)TeX source generator to produce typographically ap
 tidal calendars. I started this project a while ago for fun, so it's not fully usable as yet, but maybe
 someone can make use of it.
 
+
+<img src='https://github.com/loveencounterflow/coffeenode-tides/raw/master/art/Screen%20Shot%202014-04-02%20at%2013.08.21.png' width=400px>
+
+
 For starters, here's what the current output looks like:
 
 <img src='https://github.com/loveencounterflow/coffeenode-tides/raw/master/art/Screen%20Shot%202014-03-20%20at%2020.47.55.png' width=400px>
 
-You'll immediately notice some flaws here:
+<del>You'll immediately notice some flaws here:
 
 * most obviously, the lines in the low tide column strike through the times given; this is a result of the
   trick i used to shift those times to their offset positions.
@@ -56,7 +60,7 @@ You'll immediately notice some flaws here:
 
   Currently i use the [`hobby`](http://ftp.uni-erlangen.de/mirrors/CTAN/graphics/pgf/contrib/hobby/hobby_doc.pdf)
   package to draw the curves; it is reasonably simple to use, but takes a considerable time to get each
-  curve drawn, so maybe i'll look for a way to do this outside of TeX.
+  curve drawn, so maybe i'll look for a way to do this outside of TeX.</del>
 
 ### Observations
 
