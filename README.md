@@ -31,8 +31,18 @@ follows:
 * I've switched from using the [`hobby`](http://ftp.uni-erlangen.de/mirrors/CTAN/graphics/pgf/contrib/hobby/hobby_doc.pdf)
   package (which does all its calculations inside of TeX and is quite slow) to using [gm](https://github.com/aheckmann/gm),
   which is GraphicsMagick for NodeJS. It's much faster, and since images are stored in the filesystem, you
-  get
+  get a chance to cache those images so TeX test runs get faster. Be warned tho that including a lot of
+  hi-rez bitmaps makes TeX quite slow, too, so you may want to go with lo-rez images or else cut down to a
+  few sample pages depending on your pre-flight objectives.
 
+* Where i initially had planned to use 'lean' images that are only wide enough to display the curves
+  and then get arcanely positioned on the page, i now build images the size of the printing area of each
+  page, which i then position in the top-left corner of the printing area. This change means that i can
+  now—in tandem with [CXLTX Style: Position Absolute](https://github.com/loveencounterflow/cxltx-styles/)—use
+  the same coördinate system for both typesetting *and* graphics (all lengths are in mm relative to the
+  top-left corner of the printing area); also, it will be possible to generate all the rulers (to
+  separate individual dates, mark week and month boundaries and so on) in the image generation code,
+  which should be easier and more flexible to do than in TeX.
 
 You'll immediately notice some flaws here:
 
