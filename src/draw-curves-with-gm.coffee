@@ -56,7 +56,7 @@ options =
   return ( 0.75 + y_raw ) * options[ 'line-height.px' ]
 
 #-----------------------------------------------------------------------------------------------------------
-@_convert_dots_to_mm = ( raw_dots ) ->
+@_dots_mm_from_raw_dots = ( raw_dots ) ->
   R = []
   for raw_dot, idx in raw_dots
     [ hl, [ x_real_cm, y_raw, ], ] = raw_dot
@@ -75,41 +75,56 @@ options =
   x2          = x3
   return [ [ x1, y1, ], [ x2, y2, ] ]
 
+
+#-----------------------------------------------------------------------------------------------------------
+@_get_hl_points_from_dots = ( dots ) ->
+  R = []
+  #.........................................................................................................
+  for dot0, idx in dots
+    [ hl0, point0, ]    = dot0
+    #.......................................................................................................
+    dot3 = dots[ idx + 1 ]
+    break unless dot3?
+    [ hl3, point3, ]    = dot3
+    [ point1, point2, ] = @_get_control_points_for_vertical_bezier point0, point3
+    R.push [ hl0, [ point0, point1, point2, point3, ], ]
+  #.........................................................................................................
+  return R
+
 #-----------------------------------------------------------------------------------------------------------
 module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
   ### Given the series for line indices and water level maxima and minima (in cm relative to LAT), return
   a LaTeX snippet to include the respective image file. Missing image files will be generated on the fly.
   ###
-  bezier_tide_points  = []
+  bezier_hl_points    = []
+  bezier_h_dots       = []
+  bezier_l_dots       = []
   bezier_h_points     = []
   bezier_l_points     = []
   #.........................................................................................................
-  dots                = @_convert_dots_to_mm raw_dots
+  dots                = @_dots_mm_from_raw_dots raw_dots
+  bezier_hl_points    = @_get_hl_points_from_dots dots
   #.........................................................................................................
-  for dot0, idx in dots
-    [ hl0, point0, ]    = dot0
-    dot3 = raw_dots[ idx + 1 ]
-    break unless dot3?
-    [ hl3, point3, ]    = dot3
-    [ point1, point2, ] = @_get_control_points_for_vertical_bezier point0, point3
-    bezier_tide_points.push [ hl0, [ point0, point1, point2, point3, ], ]
+  for [ hl, point, ] in dots
+    #.......................................................................................................
+    if hl is 'h' then bezier_h_dots.push [ 'h', point, ]
+    else              bezier_l_dots.push [ 'l', point, ]
+  #.........................................................................................................
+  bezier_h_points     = @_get_hl_points_from_dots bezier_h_dots
+  bezier_l_points     = @_get_hl_points_from_dots bezier_l_dots
   #.........................................................................................................
   ### TAINT ratio pixels / mm should be configurable ###
   image = GM options[ 'width.px' ], options[ 'height.px' ], "#ffffffff"
     .fontSize 68
-    # .stroke "#ff5533", 5
-    # .stroke "#ff5533", 1
-    # .fill '#123456'
     .fill 'transparent'
-    .stroke "black", 2
-    # .stroke "blue", 4
+    .stroke 'black', 2
   #.........................................................................................................
   ### draw LAT vertical ###
   x0 = x1 = @_image_px_from_real_cm 0
   y0 = @_image_px_from_y_raw  0
   y1 = @_image_px_from_y_raw 60
   image
-    .stroke "black", 1
+    .stroke 'black', 1
     .drawLine x0, y0, x1, y1
   #.........................................................................................................
   ### draw NAP vertical ###
@@ -118,12 +133,12 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
   y0 = @_image_px_from_y_raw  0
   y1 = @_image_px_from_y_raw 60
   image
-    .stroke "black", 1
+    .stroke 'black', 1
     .drawLine x0, y0, x1, y1
   #.........................................................................................................
-  for [ hl, points, ], idx in bezier_tide_points
+  for [ hl, points, ], idx in bezier_hl_points
     image
-      .stroke "black", 1
+      .stroke 'black', 1
       .drawBezier points...
     ### draw HL horizontal ###
     if idx is 0
@@ -134,13 +149,17 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
     x1 = @_image_px_from_origin_mm ( if hl is 'h' then 40 else 55 ) + 1
     y0 = y1 = points[ 0 ][ 1 ]
     image
-      .stroke "black", 1
+      .stroke 'black', 1
       .drawLine x0, y0, x1, y1
-
+  #.........................................................................................................
+  for collection in [ bezier_h_points, bezier_l_points, ]
+    for [ hl, points, ], idx in collection
+      image
+        .stroke 'black', 4
+        .drawBezier points...
   #.........................................................................................................
   image.write route, ( error ) ->
     return handler error if error?
-    # log @outname + " created :: " + arguments[3]
     handler null
   #.........................................................................................................
   return null
