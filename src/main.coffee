@@ -112,7 +112,8 @@ new_and_full_moons = []
       minute_txt    = minute_txt[ ... minute_txt.length - 1 ]
       is_dst        = yes
     #.......................................................................................................
-    hour_txt      =  hour_txt.replace /^0/, ' '
+    ### TAINT make typography of date & time configurable ###
+    # hour_txt      =  hour_txt.replace /^0/, ' '
     day_txt       =   day_txt.replace /^0/, ' '
     month_txt     = month_txt.replace /^0/, ' '
     height        = parseInt height_txt, 10
