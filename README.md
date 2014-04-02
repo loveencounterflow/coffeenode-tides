@@ -15,7 +15,8 @@
 
 CoffeeNode Tides is a (Xe)(La)TeX source generator to produce typographically appealing and moderately complex
 tidal calendars. I started this project a while ago for fun, so it's not fully usable as yet, but maybe
-someone can make use of it.
+someone can make use of it. Curves shown are for an arbitrary place in the Netherlands; the aim is to
+present a tidal calendar for part of the year with a selection of places.
 
 For starters, here's what the current output looks like:
 
