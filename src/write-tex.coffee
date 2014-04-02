@@ -223,14 +223,15 @@ thinspace                 = '\u2009'
         #---------------------------------------------------------------------------------------------------
         do ( page_nr, dots ) =>
           #-------------------------------------------------------------------------------------------------
-          ### TAINT asynchronous handling is missing ###
-          info "drawing image #{page_nr}"
-          route = njs_path.join '/tmp', "tides-p#{page_nr}.png"
-          # echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[height=178mm]{#{route}}}"""
-          echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[width=118mm]{#{route}}}"""
-          @draw_curves route, dots, ( error ) =>
-            info "image #{page_nr} ok"
-            throw error if error?
+          if page_nr < 3
+            ### TAINT asynchronous handling is missing ###
+            info "drawing image #{page_nr}"
+            route = njs_path.join '/tmp', "tides-p#{page_nr}.png"
+            # echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[height=178mm]{#{route}}}"""
+            echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[width=118mm]{#{route}}}"""
+            @draw_curves route, dots, ( error ) =>
+              info "image #{page_nr} ok"
+              throw error if error?
         #---------------------------------------------------------------------------------------------------
         dots      = []
         echo """\\null\\newpage"""
