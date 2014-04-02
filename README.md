@@ -25,7 +25,10 @@ And this is the output from an earlier incarnation of my code:
 
 <img src='https://github.com/loveencounterflow/coffeenode-tides/raw/master/art/Screen%20Shot%202014-03-20%20at%2020.47.55.png' width=400px>
 
-I've concentrated my efforts on getting those curves right, and the way i'm doing that may be summarized as
+To see the latest and greatest, have a look at [calendar-latest-good.pdf](https://github.com/loveencounterflow/coffeenode-tides/raw/master/calendar-latest-good.pdf)
+(file calendar.pdf, in contrast, always shows the latest test output).
+
+I've lately concentrated my efforts on getting those curves right, and the way i'm doing that may be summarized as
 follows:
 
 * I've switched from using the [`hobby`](http://ftp.uni-erlangen.de/mirrors/CTAN/graphics/pgf/contrib/hobby/hobby_doc.pdf)
@@ -44,7 +47,7 @@ follows:
   separate individual dates, mark week and month boundaries and so on) in the image generation code,
   which should be easier and more flexible to do than in TeX.
 
-You'll immediately notice some flaws here:
+<del>You'll immediately notice some flaws here:</del>
 
 * <del>most obviously, the lines in the low tide column strike through the times given; this is a result of the
   trick i used to shift those times to their offset positions.</del>
