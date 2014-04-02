@@ -17,13 +17,22 @@ CoffeeNode Tides is a (Xe)(La)TeX source generator to produce typographically ap
 tidal calendars. I started this project a while ago for fun, so it's not fully usable as yet, but maybe
 someone can make use of it.
 
+For starters, here's what the current output looks like:
 
 <img src='https://github.com/loveencounterflow/coffeenode-tides/raw/master/art/Screen%20Shot%202014-04-02%20at%2013.08.21.png' width=400px>
 
-
-For starters, here's what the current output looks like:
+And this is the output from an earlier incarnation of my code:
 
 <img src='https://github.com/loveencounterflow/coffeenode-tides/raw/master/art/Screen%20Shot%202014-03-20%20at%2020.47.55.png' width=400px>
+
+I've concentrated my efforts on getting those curves right, and the way i'm doing that may be summarized as
+follows:
+
+* I've switched from using the [`hobby`](http://ftp.uni-erlangen.de/mirrors/CTAN/graphics/pgf/contrib/hobby/hobby_doc.pdf)
+  package (which does all its calculations inside of TeX and is quite slow) to using [gm](https://github.com/aheckmann/gm),
+  which is GraphicsMagick for NodeJS. It's much faster, and since images are stored in the filesystem, you
+  get
+
 
 You'll immediately notice some flaws here:
 
@@ -35,7 +44,7 @@ You'll immediately notice some flaws here:
   be impossible to do. As a next step, i want to typeset in twice the number of rows and use `multirow`s
   so that the *visual* rows can be offset by a half row's height (still with me?).</del>
 
-* There are lines missing in the low tide column; this is due to a flaw in the data reader.
+* <del>There are lines missing in the low tide column; this is due to a flaw in the data reader.</del>
 
 * <del>There is no column and page breaking implemented as yet, so the table will just run off the page.</del>
 
