@@ -25,24 +25,22 @@ For starters, here's what the current output looks like:
 
 <img src='https://github.com/loveencounterflow/coffeenode-tides/raw/master/art/Screen%20Shot%202014-03-20%20at%2020.47.55.png' width=400px>
 
-<del>You'll immediately notice some flaws here:
+You'll immediately notice some flaws here:
 
-* most obviously, the lines in the low tide column strike through the times given; this is a result of the
-  trick i used to shift those times to their offset positions.
+* <del>most obviously, the lines in the low tide column strike through the times given; this is a result of the
+  trick i used to shift those times to their offset positions.</del>
 
 * I actually want those lines to separate dates by enclosing them in boxes, so people don't have to guess
-  which times belongs to which date; however, with the current table setting strategy his will almost
+  which times belongs to which date; <del>however, with the current table setting strategy his will almost
   be impossible to do. As a next step, i want to typeset in twice the number of rows and use `multirow`s
-  so that the *visual* rows can be offset by a half row's height (still with me?).
+  so that the *visual* rows can be offset by a half row's height (still with me?).</del>
 
 * There are lines missing in the low tide column; this is due to a flaw in the data reader.
 
-* There is no column and page breaking implemented as yet, so the table will just run off the page.
+* <del>There is no column and page breaking implemented as yet, so the table will just run off the page.</del>
 
 * I plan to include curves to visualize tidal levels; i already have this output (which is planned to appear
   to the right of the times columns):
-
-  <img src='https://github.com/loveencounterflow/coffeenode-tides/raw/master/art/Screen%20Shot%202014-03-20%20at%2021.40.43.png' width=100px>
 
   The left line symbolizes the heights of the high water, the right one the heights of the low water
   point. I hope i got the figures right. Maybe i add another line in the middle that shows the actual water
@@ -54,11 +52,11 @@ For starters, here's what the current output looks like:
   ripples on the water's surface. That's truly turtles all the way down, and very amazing. It may also be
   interesting and helpful for people using the calender.
 
-  While this output does not look so grand when seen in isolation, i want to add a grid for height
+  <del>While this output does not look so grand when seen in isolation, i want to add a grid for height
   orientation with references to Normaal Amsterdams Peil (NAP, Amsterdam Ordnance Datum) and Lowest
-  Astronomical Tide (LAT) as well as horizontal lines to link to the respective time.
+  Astronomical Tide (LAT) as well as horizontal lines to link to the respective time.</del>
 
-  Currently i use the [`hobby`](http://ftp.uni-erlangen.de/mirrors/CTAN/graphics/pgf/contrib/hobby/hobby_doc.pdf)
+  <del>Currently i use the [`hobby`](http://ftp.uni-erlangen.de/mirrors/CTAN/graphics/pgf/contrib/hobby/hobby_doc.pdf)
   package to draw the curves; it is reasonably simple to use, but takes a considerable time to get each
   curve drawn, so maybe i'll look for a way to do this outside of TeX.</del>
 
