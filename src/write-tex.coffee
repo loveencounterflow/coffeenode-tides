@@ -4,7 +4,7 @@
 njs_fs                    = require 'fs'
 njs_path                  = require 'path'
 #...........................................................................................................
-# BAP                       = require 'coffeenode-bitsnpieces'
+BAP                       = require 'coffeenode-bitsnpieces'
 TYPES                     = require 'coffeenode-types'
 TRM                       = require 'coffeenode-trm'
 # FS                        = require 'coffeenode-fs'
@@ -317,16 +317,164 @@ thinspace                 = '\u2009'
     # TEX.push rows, @new_row trc
 
 ############################################################################################################
-@main() unless module.parent?
-
-# info TEX.rpr TEX.new_multicommand 'foo', 3, [ 'helo', 'world', '!' ]
-
-# foo = TEX.make_multicommand 'foo', 3
-# info foo [ 'helo', 'world', '!' ]
-# info TEX.rpr foo [ 'helo', 'world', '!' ]
+# @main() unless module.parent?
 
 
+# OPTIONS = require 'coffeenode-options'
+# TRM.dir OPTIONS
 
+# info OPTIONS.get_app_info()
+# info OPTIONS.get_app_options()
+
+BAP                       = require 'coffeenode-bitsnpieces'
+
+d =
+  'flowers': [ 'roses', 'dandelion', 'tulip', ]
+  'foo':    42
+  'bar':    108
+  'deep':
+    'one':    1
+    'two':    2
+    'three':
+      'four':   4
+
+
+debug d
+info BAP.container_and_facet_from_locator d, '/foo'
+info BAP.container_and_facet_from_locator d, '/bar'
+info BAP.container_and_facet_from_locator d, '/deep'
+info BAP.container_and_facet_from_locator d, '/deep/one'
+info BAP.container_and_facet_from_locator d, '/deep/two'
+info BAP.container_and_facet_from_locator d, '/deep/three'
+info BAP.container_and_facet_from_locator d, '/deep/three/four'
+try
+  info BAP.container_and_facet_from_locator d, '/deep/three/four/bar'
+  throw new Error "missing error"
+catch error
+  log TRM.green error[ 'message' ]
+  log TRM.green 'OK'
+try
+  info BAP.container_and_facet_from_locator d, '/deep/four/bar'
+  throw new Error "missing error"
+catch error
+  log TRM.green error[ 'message' ]
+  log TRM.green 'OK'
+
+
+
+
+# d = CJSON.load njs_path.join BAP.get_app_home(), 'options.json'
+options = require njs_path.join BAP.get_app_home(), 'options.json'
+debug options
+info BAP.walk_containers_crumbs_and_values options, ( error, container, crumbs, value ) ->
+  throw error if error?
+  if crumbs is null
+    log 'over'
+    return
+  log '',
+    ( TRM.gold '/' + ( crumbs.join '/' ) )
+    # ( TRM.grey container )
+    ( TRM.lime rpr value )
+
+d =
+  meaningless: [
+    42
+    43
+    { foo: 1, bar: 2, nested: [ 'a', 'b', ] }
+    45 ]
+  deep:
+    down:
+      in:
+        a:
+          drawer:   'a pen'
+          cupboard: 'a pot'
+          box:      'a pill'
+
+BAP.walk_containers_crumbs_and_values d, ( error, container, crumbs, value ) ->
+  throw error if error?
+  if crumbs is null
+    log 'over'
+    return
+  locator           = '/' + crumbs.join '/'
+  # in case you want to mutate values in a container, use:
+  [ head..., key, ] = crumbs
+  log "#{locator}:", rpr value
+  # debug rpr key
+  if key is 'box'
+    container[ 'addition' ] = 'yes!'
+    debug container
+
+info d
+
+locators = [
+  '/meaningless/0'
+  '/meaningless/1'
+  '/meaningless/2/foo'
+  '/meaningless/2/bar'
+  '/meaningless/2/nested/0'
+  '/meaningless/2/nested/1'
+  '/meaningless/3'
+  '/deep/down/in/a/drawer'
+  '/deep/down/in/a/cupboard'
+  '/deep/down/in/a/box'
+]
+
+for locator in locators
+  [ container
+    key
+    value     ] = BAP.container_and_facet_from_locator d, locator
+  info locator, ( TRM.grey locator ), ( TRM.gold key ), rpr value
+
+log BAP.container_and_facet_from_locator 42, '/'
+
+compile_options = ( options ) ->
+  BAP.walk_containers_crumbs_and_values options, ( error, container, crumbs, value ) =>
+    throw error if error?
+    if crumbs is null
+      log 'over'
+      return
+    locator           = '/' + crumbs.join '/'
+    [ ..., key ]      = crumbs
+    log "#{locator}:", rpr value
+    /// \$ ///
+
+# compile_options options
+
+
+
+
+############################################################################################################
+# @options = CJSON.load njs_path.join BAP.get_app_home(), 'options.json'
+# info BAP.compile_options @options
+
+# info '$foo'.match BAP.compile_options.name_re
+
+# options =
+#   'columns': []
+#   'moon-symbols':
+#     'unicode': [ '⬤', '◐', '◯', '◑', ]
+#     'tex':    [
+#       '\\newmoon'
+#       '\\rightmoon'
+#       '\\fullmoon'
+#       '\\leftmoon' ]
+#   'weekday-names':
+#     'dutch':
+#       'full':         [ 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag', ]
+#       'abbreviated':  [ 'ma', 'di', 'wo', 'do', 'vr', 'za', 'zo', ]
+#   'month-names':
+#     'dutch':
+#       'full':         [ 'januari', 'februari', 'maart', 'april', 'mei', 'juni',
+#                         'juli', 'augustus', 'september', 'oktober', 'november', 'december', ]
+#       'abbreviated':  [ 'jan', 'feb', 'maart', 'apr', 'mei', 'juni',
+#                         'juli', 'aug', 'sept', 'oct', 'nov', 'dec', ]
+
+
+# echo JSON.stringify options, null, '  '
+
+# debug JSON.parse """{ "foo": "bar", "deep": [ { "zero": true }, 1,2,3] }""", ( key, value ) ->
+#   info @, key#, value
+#   return value
 
 
 
