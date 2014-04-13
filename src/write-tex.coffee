@@ -6,6 +6,7 @@ njs_path                  = require 'path'
 #...........................................................................................................
 BAP                       = require 'coffeenode-bitsnpieces'
 TYPES                     = require 'coffeenode-types'
+TEXT                      = require 'coffeenode-text'
 TRM                       = require 'coffeenode-trm'
 # FS                        = require 'coffeenode-fs'
 rpr                       = TRM.rpr.bind TRM
@@ -326,55 +327,167 @@ thinspace                 = '\u2009'
 # info OPTIONS.get_app_info()
 # info OPTIONS.get_app_options()
 
-BAP                       = require 'coffeenode-bitsnpieces'
+# BAP                       = require 'coffeenode-bitsnpieces'
 
-d =
-  'flowers': [ 'roses', 'dandelion', 'tulip', ]
-  'foo':    42
-  'bar':    108
-  'deep':
-    'one':    1
-    'two':    2
-    'three':
-      'four':   4
-
-
-debug d
-info BAP.container_and_facet_from_locator d, '/foo'
-info BAP.container_and_facet_from_locator d, '/bar'
-info BAP.container_and_facet_from_locator d, '/deep'
-info BAP.container_and_facet_from_locator d, '/deep/one'
-info BAP.container_and_facet_from_locator d, '/deep/two'
-info BAP.container_and_facet_from_locator d, '/deep/three'
-info BAP.container_and_facet_from_locator d, '/deep/three/four'
-try
-  info BAP.container_and_facet_from_locator d, '/deep/three/four/bar'
-  throw new Error "missing error"
-catch error
-  log TRM.green error[ 'message' ]
-  log TRM.green 'OK'
-try
-  info BAP.container_and_facet_from_locator d, '/deep/four/bar'
-  throw new Error "missing error"
-catch error
-  log TRM.green error[ 'message' ]
-  log TRM.green 'OK'
+# d =
+#   'flowers': [ 'roses', 'dandelion', 'tulip', ]
+#   'foo':    42
+#   'bar':    108
+#   'deep':
+#     'one':    1
+#     'two':    2
+#     'three':
+#       'four':   4
 
 
+# debug d
+# info BAP.container_and_facet_from_locator d, '/foo'
+# info BAP.container_and_facet_from_locator d, '/bar'
+# info BAP.container_and_facet_from_locator d, '/deep'
+# info BAP.container_and_facet_from_locator d, '/deep/one'
+# info BAP.container_and_facet_from_locator d, '/deep/two'
+# info BAP.container_and_facet_from_locator d, '/deep/three'
+# info BAP.container_and_facet_from_locator d, '/deep/three/four'
+# try
+#   info BAP.container_and_facet_from_locator d, '/deep/three/four/bar'
+#   throw new Error "missing error"
+# catch error
+#   log TRM.green error[ 'message' ]
+#   log TRM.green 'OK'
+# try
+#   info BAP.container_and_facet_from_locator d, '/deep/four/bar'
+#   throw new Error "missing error"
+# catch error
+#   log TRM.green error[ 'message' ]
+#   log TRM.green 'OK'
 
 
-# d = CJSON.load njs_path.join BAP.get_app_home(), 'options.json'
-options = require njs_path.join BAP.get_app_home(), 'options.json'
-debug options
-info BAP.walk_containers_crumbs_and_values options, ( error, container, crumbs, value ) ->
-  throw error if error?
-  if crumbs is null
-    log 'over'
-    return
-  log '',
-    ( TRM.gold '/' + ( crumbs.join '/' ) )
-    # ( TRM.grey container )
-    ( TRM.lime rpr value )
+
+
+# # d = CJSON.load njs_path.join BAP.get_app_home(), 'options.json'
+# options = require njs_path.join BAP.get_app_home(), 'options.json'
+# debug options
+# info BAP.walk_containers_crumbs_and_values options, ( error, container, crumbs, value ) ->
+#   throw error if error?
+#   if crumbs is null
+#     log 'over'
+#     return
+#   log '',
+#     ( TRM.gold '/' + ( crumbs.join '/' ) )
+#     # ( TRM.grey container )
+#     ( TRM.lime rpr value )
+
+# d =
+#   meaningless: [
+#     42
+#     43
+#     { foo: 1, bar: 2, nested: [ 'a', 'b', ] }
+#     45 ]
+#   deep:
+#     down:
+#       in:
+#         a:
+#           drawer:   'a pen'
+#           cupboard: 'a pot'
+#           box:      'a pill'
+
+# BAP.walk_containers_crumbs_and_values d, ( error, container, crumbs, value ) ->
+#   throw error if error?
+#   if crumbs is null
+#     log 'over'
+#     return
+#   locator           = '/' + crumbs.join '/'
+#   # in case you want to mutate values in a container, use:
+#   [ head..., key, ] = crumbs
+#   log "#{locator}:", rpr value
+#   # debug rpr key
+#   if key is 'box'
+#     container[ 'addition' ] = 'yes!'
+#     debug container
+
+# info d
+
+# locators = [
+#   '/meaningless/0'
+#   '/meaningless/1'
+#   '/meaningless/2/foo'
+#   '/meaningless/2/bar'
+#   '/meaningless/2/nested/0'
+#   '/meaningless/2/nested/1'
+#   '/meaningless/3'
+#   '/deep/down/in/a/drawer'
+#   '/deep/down/in/a/cupboard'
+#   '/deep/down/in/a/box'
+# ]
+
+# for locator in locators
+#   [ container
+#     key
+#     value     ] = BAP.container_and_facet_from_locator d, locator
+#   info locator, ( TRM.grey locator ), ( TRM.gold key ), rpr value
+
+# # log BAP.container_and_facet_from_locator 42, '/'
+
+# #-----------------------------------------------------------------------------------------------------------
+# compile_options = ( options ) ->
+#   #---------------------------------------------------------------------------------------------------------
+#   BAP.walk_containers_crumbs_and_values options, ( error, container, crumbs, value ) =>
+#     throw error if error?
+#     if crumbs is null
+#       log 'over'
+#       return
+#     locator           = '/' + crumbs.join '/'
+#     [ ..., key ]      = crumbs
+#     return null unless TYPES.isa_text value
+#     #-------------------------------------------------------------------------------------------------------
+#     TEXT.fill_in value, ( error, fill_in_key, format ) =>
+#       throw error if error?
+#       return null unless key?
+#       debug locator, key, value, fill_in_key, format
+
+# info options
+# compile_options options
+
+# matcher = TEXT.fill_in.get_matcher()
+# templates = [
+#   'foo bar baz'
+#   'foo $bar baz'
+#   'foo ${bar} baz'
+#   'foo ${bar/x/y} baz'
+#   'foo ${bar/x/y} $month baz'
+#   'foo ${bar/x/y/$month}  baz'
+#   '$foo bar baz'
+#   ]
+
+# for template in templates
+#   match = template.match matcher
+#   if match?
+#     [ ignored
+#       prefix
+#       markup
+#       bare
+#       bracketed
+#       tail      ] = match
+#     ### TAINT not correct ###
+#     activator_length = 1
+#     #.......................................................................................................
+#     if bare?
+#       name          = bare
+#       ### TAINT not correct ###
+#       opener_length = 1
+#       closer_length = 1
+#     else
+#       name          = bracketed
+#       opener_length = 0
+#       closer_length = 0
+#     #.......................................................................................................
+#     log TRM.gold template
+#     log TRM.plum template.replace matcher, ( ignored, prefix, markup, bare, bracketed, tail ) ->
+#       return prefix + ( ( new Array markup.length + 1 ).join '_' ) + tail
+#     log TRM.red TEXT.fill_in template, {}
+#     info match[ 1 .. ]
+#   else
+#     whisper template
 
 d =
   meaningless: [
@@ -386,61 +499,28 @@ d =
     down:
       in:
         a:
-          drawer:   'a pen'
-          cupboard: 'a pot'
-          box:      'a pill'
+          drawer:   '${/my-things/pen}'
+          cupboard: '${/my-things/pot}'
+          box:      '${${locations/for-things}/variable}'
+  'my-things':
+    pen:      'a pen'
+    pot:      'a pot'
+    pill:     'a pill'
+    variable: '${/my-things/pill}'
+  locations:
+    'for-things':   '/my-things'
+  ping1:      '${/ping4}'
+  ping2:      '${/ping3}'
+  ping3:      '${/ping2}'
+  ping4:      '${/ping1}'
+  pong:       '${/ping1}'
 
-BAP.walk_containers_crumbs_and_values d, ( error, container, crumbs, value ) ->
-  throw error if error?
-  if crumbs is null
-    log 'over'
-    return
-  locator           = '/' + crumbs.join '/'
-  # in case you want to mutate values in a container, use:
-  [ head..., key, ] = crumbs
-  log "#{locator}:", rpr value
-  # debug rpr key
-  if key is 'box'
-    container[ 'addition' ] = 'yes!'
-    debug container
-
-info d
-
-locators = [
-  '/meaningless/0'
-  '/meaningless/1'
-  '/meaningless/2/foo'
-  '/meaningless/2/bar'
-  '/meaningless/2/nested/0'
-  '/meaningless/2/nested/1'
-  '/meaningless/3'
-  '/deep/down/in/a/drawer'
-  '/deep/down/in/a/cupboard'
-  '/deep/down/in/a/box'
-]
-
-for locator in locators
-  [ container
-    key
-    value     ] = BAP.container_and_facet_from_locator d, locator
-  info locator, ( TRM.grey locator ), ( TRM.gold key ), rpr value
-
-log BAP.container_and_facet_from_locator 42, '/'
-
-compile_options = ( options ) ->
-  BAP.walk_containers_crumbs_and_values options, ( error, container, crumbs, value ) =>
-    throw error if error?
-    if crumbs is null
-      log 'over'
-      return
-    locator           = '/' + crumbs.join '/'
-    [ ..., key ]      = crumbs
-    log "#{locator}:", rpr value
-    /// \$ ///
-
-# compile_options options
+#   '/meaningless/3'
+#   '/deep/down/in/a/drawer'
 
 
+TEXT.fill_in.container d
+debug d
 
 
 ############################################################################################################

@@ -1,11 +1,13 @@
 {
   "language": "dutch",
-  "foo1": "$bar",
-  "foo2": "${/bar}",
-  "foo3": "${/weekday-names}",
-  "foo4": "${/weekday-names/dutch/full/0}",
-  "foo5": "${/weekday-names/$language/full/0}",
-  "foo6": "${/weekday-names/${/language}/full/0}",
+  "foo": [
+    "$bar",
+    "${/bar}",
+    "${/weekday-names}",
+    "${/weekday-names/dutch/full/0}",
+    "${/weekday-names/$language/full/0}",
+    "${/weekday-names/${/language}/full/0}",
+    "$bar:quoted" ],
   "bar": 42,
   "columns": [],
   "moon-symbols": {

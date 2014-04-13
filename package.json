@@ -6,17 +6,21 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/loveencounterflow/coffeenode-tides.git"
+  },
   "author": "",
   "license": "BSD-2-Clause",
-  "dependencies": {
-    "xdate": "~0.8.0",
-    "coffeenode-fs": "~0.1.1",
-    "coffeenode-types": "~0.1.1",
-    "coffeenode-trm": "~0.1.14",
-    "coffee-script": "~1.7.1",
-    "coffeenode-bitsnpieces": "0.0.7"
-  },
   "devDependencies": {
     "coffee-script": "~1.7.1"
+  },
+  "dependencies": {
+    "xdate": "0.8.x",
+    "coffeenode-fs": "0.1.x",
+    "gm": "1.14.x",
+    "coffeenode-bitsnpieces": "0.0.x",
+    "coffeenode-trm": "0.1.x",
+    "coffeenode-types": "0.1.x"
   }
 }
