@@ -6,16 +6,17 @@
 settings =
   #.........................................................................................................
   ### Choose your language: ###
-  # language:   'nl_NL'
-  language:   'de_DE'
+  language:   'nl_NL'
+  # language:   'de_DE'
   #.........................................................................................................
   ### Choose your styles: ###
   styles:
     weekdays:   'abbreviated'
-    months:     'abbreviated'
+    # months:     'abbreviated'
+    months:     'full'
     moon:       'plain'
     # moon:       'unicode'
-
+    layout:     'plain'
 
 ############################################################################################################
 values =
@@ -23,6 +24,7 @@ values =
   weekdays:   '${/data/translations/${/settings/language}/weekdays/${/settings/styles/weekdays}}'
   months:     '${/data/translations/${/settings/language}/months/${/settings/styles/months}}'
   moon:       '${/data/moon/${/settings/styles/moon}}'
+  layout:     '${/data/layouts/${/settings/styles/layout}}'
 
 #-----------------------------------------------------------------------------------------------------------
 data =
@@ -67,6 +69,31 @@ data =
       months:
         full:         [ "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember", ]
         abbreviated:  [ "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sept", "Okt", "Nov", "Dez", ]
+  #.........................................................................................................
+  ### All measurements in mm (this may change) ###
+  layouts:
+    plain:
+      # paper:
+      margins:
+        outer:        10
+        top:          12
+      month:
+        even:
+          align:
+            x:        'left'
+            y:        'baseline'
+          position:
+            x:        '${/data/layouts/plain/margins/outer}'
+            y:        '${/data/layouts/plain/margins/top}'
+        odd:
+          align:
+            x:        'right'
+            y:        'baseline'
+          position:
+            # x:        '${/data/layouts/plain/margins/outer}'
+            x:        118
+            # y:        '${/data/layouts/plain/margins/top}'
+            y:        0
 
 
 #===========================================================================================================

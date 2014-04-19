@@ -47,6 +47,9 @@ leavevmode                = TEX.make_command 'leavevmode'
 hbox                      = TEX.make_command 'hbox'
 leading                   = TEX.make_command 'leading'
 multicolumn               = TEX.make_multicommand 'multicolumn', 3
+paLeft                    = TEX.make_multicommand 'paLeft', 3
+paCenter                  = TEX.make_multicommand 'paCenter', 3
+paRight                   = TEX.make_multicommand 'paRight', 3
 # fncrNG                    = TEX.make_multicommand 'fncrNG', 3
 # fncrC                     = TEX.make_multicommand 'fncrC', 3
 hrule                     = TEX.raw """\n\n\\hrule\n\n"""
@@ -61,54 +64,40 @@ thinspace                 = TEX.raw '$\\thinspace$'
 thinspace                 = '\u2009'
 # thinspace                 = '\u200a'
 
-# #-----------------------------------------------------------------------------------------------------------
-# @moon_symbols =
-#   'unicode': [ '⬤', '◐', '◯', '◑', ]
-#   'plain':    [
-#     '\\newmoon'
-#     '\\rightmoon'
-#     '\\fullmoon'
-#     '\\leftmoon' ]
-#     # ( TEX.raw '\\newmoon'   ),
-#     # ( TEX.raw '\\rightmoon' ),
-#     # ( TEX.raw '\\fullmoon'  ),
-#     # ( TEX.raw '\\leftmoon'  ), ]
 
 #-----------------------------------------------------------------------------------------------------------
-@weekday_names =
-  'dutch':
-    'full':         [ 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag', ]
-    'abbreviated':  [ 'ma', 'di', 'wo', 'do', 'vr', 'za', 'zo', ]
+@_get_month_name = ( month_nr ) ->
+  month_nr  = @_as_integer month_nr
+  # debug TIDES.options
+  R         = TIDES.options.get "/values/months/#{month_nr - 1}"
+  throw new Error "unable to understand month specification  #{rpr month_nr}" unless R?
+  return R
 
 #-----------------------------------------------------------------------------------------------------------
-@month_names =
-  'dutch':
-    'full':         [ 'januari', 'februari', 'maart', 'april', 'mei', 'juni',
-                      'juli', 'augustus', 'september', 'oktober', 'november', 'december', ]
-    'abbreviated':  [ 'jan', 'feb', 'maart', 'apr', 'mei', 'juni',
-                      'juli', 'aug', 'sept', 'oct', 'nov', 'dec', ]
-
-#-----------------------------------------------------------------------------------------------------------
-@get_month_name = ( month, language, style ) ->
-  month = parseInt month, 10 unless TYPES.isa_number month
-  R     = @month_names[ language ]?[ style ]?[ month - 1 ]
+@format_month_name = ( month_nr ) ->
+  month_name = @_get_month_name month_nr
+  month_name = month_name[ 0 ].toUpperCase() + month_name[ 1 .. ]
   #.........................................................................................................
-  unless R?
-    throw new Error "unable to understand month specification  #{rpr month}, #{rpr language}, #{rpr style}"
+  # echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[width=118mm]{#{route}}}"""
+  ### TAINT inefficient to retrieve each time; options should use cache ###
+  align_x     = TIDES.options.get '/values/layout/month/odd/align/x'
+  align_y     = TIDES.options.get '/values/layout/month/odd/align/y'
+  position_x  = ( TIDES.options.get '/values/layout/month/odd/position/x' ) + 'mm'
+  position_y  = ( TIDES.options.get '/values/layout/month/odd/position/y' ) + 'mm'
   #.........................................................................................................
-  return R # .toUpperCase()
-
-#-----------------------------------------------------------------------------------------------------------
-@format_month = ( month ) ->
-  # month = @get_month_name month, 'dutch', 'full'
-  month = @get_month_name month, 'dutch', 'abbreviated'
-  month = month[ 0 ].toUpperCase() + month[ 1 .. ]
+  switch alignment = align_x
+    when 'left'   then pa_command = paLeft
+    when 'center' then pa_command = paCenter
+    when 'right'  then pa_command = paRight
+    else throw new Error "unknown alignment #{rpr alignment}"
+  #.........................................................................................................
   return TEX.new_group [
-    TEX.new_command 'color', 'DarkRed'
     TEX.new_loner 'scFont'
     TEX.new_loner 'large'
-    ' '
-    month ]
+    TEX.new_command 'paGauge', [ month_name, ]
+    TEX.new_command 'color', 'DarkRed'
+    pa_command [ position_x, position_y, month_name ]
+    ]
 
 # #-----------------------------------------------------------------------------------------------------------
 # @new_row = ( table_row ) ->
@@ -213,7 +202,8 @@ thinspace                 = '\u2009'
     # return null unless this_month is ' 1' # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     #.......................................................................................................
     unless wrote_header
-      this_month_tex = @format_month this_month
+      this_month_tex = @format_month_name this_month
+      echo TEX.rpr this_month_tex
       wrote_header = yes
     #.......................................................................................................
     if ( moon_quarter = trc[ 'moon-quarter' ] )?
@@ -246,7 +236,7 @@ thinspace                 = '\u2009'
     #.......................................................................................................
     ### TAINT Unfortunate solution to again ask for moon quarter ###
     if moon_quarter?
-      moon_symbol = TIDES.options.get.moon_symbol_from_quarter moon_quarter
+      moon_symbol = TIDES.options.get "/values/moon/#{moon_quarter}"
       echo """\\paRight{10mm}{#{y_position}}{#{moon_symbol}}"""
     #.......................................................................................................
     unless last_day is this_day
@@ -278,12 +268,10 @@ thinspace                 = '\u2009'
 
 ############################################################################################################
 unless module.parent?
-  # @main()
-  # debug JSON.stringify TIDES.options, null, '  '
-  debug TIDES[ 'options' ][ 'values' ][ 'moon' ][ 0 ]
-  debug ( TIDES.options.get '/values/moon' )[ 0 ]
-  debug TIDES.options.get '/values/moon/0'
-  FI = require 'coffeenode-fillin'
-  fill_in = FI.new_method()
-  debug TIDES.options.get fill_in '/values/moon/$quarter', quarter: 0
-  debug ( '%' + ( chr.charCodeAt 0 ).toString 16 for chr in '/' + FI.default_matcher.source + '/' ).join ''
+  @main()
+  # debug TIDES[ 'options' ][ 'values' ][ 'moon' ][ 0 ]
+  # debug ( TIDES.options.get '/values/moon' )[ 0 ]
+  # debug TIDES.options.get '/values/moon/0'
+  # FI = require 'coffeenode-fillin'
+  # fill_in = FI.new_method()
+  # debug TIDES.options.get fill_in '/values/moon/$quarter', quarter: 0
