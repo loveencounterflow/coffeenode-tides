@@ -16,11 +16,12 @@
     "coffee-script": "~1.7.1"
   },
   "dependencies": {
-    "xdate": "0.8.x",
-    "coffeenode-fs": "0.1.x",
-    "gm": "1.14.x",
-    "coffeenode-bitsnpieces": "0.0.x",
-    "coffeenode-trm": "0.1.x",
-    "coffeenode-types": "0.1.x"
+    "xdate": "^0.8.x",
+    "coffeenode-fs": "^0.1.x",
+    "gm": "^1.14.x",
+    "coffeenode-bitsnpieces": "^0.0.x",
+    "coffeenode-trm": "^0.1.x",
+    "coffeenode-types": "^0.1.x",
+    "coffeenode-fillin": "^0.1.1"
   }
 }
