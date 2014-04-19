@@ -286,4 +286,4 @@ unless module.parent?
   FI = require 'coffeenode-fillin'
   fill_in = FI.new_method()
   debug TIDES.options.get fill_in '/values/moon/$quarter', quarter: 0
-  debug ( '%' + ( chr.charCodeAt 0 ).toString 16 for chr in FI.default_matcher.source ).join ''
+  debug ( '%' + ( chr.charCodeAt 0 ).toString 16 for chr in '/' + FI.default_matcher.source + '/' ).join ''
