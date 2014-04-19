@@ -4,6 +4,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR
 
 ./node_modules/coffee-script/bin/coffee --watch --output ./lib --compile ./src &
-./node_modules/coffee-script/bin/coffee --watch ./options.coffee
+./node_modules/coffee-script/bin/coffee --watch --compile ./options.coffee
 
 

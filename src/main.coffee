@@ -21,8 +21,7 @@ debug                     = TRM.get_logger 'debug',     badge
 warn                      = TRM.get_logger 'warn',      badge
 help                      = TRM.get_logger 'help',      badge
 echo                      = TRM.echo.bind TRM
-FI                        = require 'coffeenode-fillin'
-@options                  = FI.fill_in require '../options'
+@options                  = require '../options'
 #...........................................................................................................
 eventually                = process.nextTick
 XDate                     = require 'xdate'

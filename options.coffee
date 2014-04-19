@@ -1,11 +1,40 @@
 
-module.exports =
+
+
+
+#-----------------------------------------------------------------------------------------------------------
+settings =
   #.........................................................................................................
-  language:   'nl_NL'
+  ### Choose your language: ###
+  # language:   'nl_NL'
+  language:   'de_DE'
+  #.........................................................................................................
+  ### Choose your styles: ###
   styles:
     weekdays:   'abbreviated'
-  keys:
-    weekdays:     '${/translations/${/language}/weekdays/${/styles/weekdays}}'
+    months:     'abbreviated'
+    moon:       'plain'
+    # moon:       'unicode'
+
+
+############################################################################################################
+values =
+  #.........................................................................................................
+  weekdays:   '${/data/translations/${/settings/language}/weekdays/${/settings/styles/weekdays}}'
+  months:     '${/data/translations/${/settings/language}/months/${/settings/styles/months}}'
+  moon:       '${/data/moon/${/settings/styles/moon}}'
+
+#-----------------------------------------------------------------------------------------------------------
+data =
+  #.........................................................................................................
+  moon:
+    unicode:
+      [ '⬤', '◐', '◯', '◑', ]
+    plain:    [
+      '\\newmoon'
+      '\\rightmoon'
+      '\\fullmoon'
+      '\\leftmoon' ]
   #.........................................................................................................
   translations:
     #.......................................................................................................
@@ -39,65 +68,43 @@ module.exports =
         full:         [ "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember", ]
         abbreviated:  [ "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sept", "Okt", "Nov", "Dez", ]
 
-###
 
-{
-  "language": "dutch",
-  "foo": [
-    "$bar",
-    "${/bar}",
-    "${/weekday-names}",
-    "${/weekday-names/dutch/full/0}",
-    "${/weekday-names/$language/full/0}",
-    "${/weekday-names/${/language}/full/0}",
-    "$bar:quoted" ],
-  "bar": 42,
-  "columns": [],
-  "moon-symbols": {
-    "unicode": [
-      "⬤",
-      "◐",
-      "◯",
-      "◑"
-    ],
-    "tex": [
-      "\\newmoon",
-      "\\rightmoon",
-      "\\fullmoon",
-      "\\leftmoon"
-    ]
-  },
-  "weekday-names": {
-    "dutch": {
-      "full": [
-        "maandag",
-        "dinsdag",
-        "woensdag",
-        "donderdag",
-        "vrijdag",
-        "zaterdag",
-        "zondag"
-      ],
-      "abbreviated": [
-        "ma",
-        "di",
-        "wo",
-        "do",
-        "vr",
-        "za",
-        "zo"
-      ]
-    }
-  },
-  "month-names": {
-    "dutch": {
-      "full": [
-        "januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"
-      ],
-      "abbreviated": [
-        "jan", "feb", "maart", "apr", "mei", "juni", "juli", "aug", "sept", "oct", "nov", "dec"
-      ]
-    }
-  }
-}
-###
+#===========================================================================================================
+# GETTERS
+#-----------------------------------------------------------------------------------------------------------
+get = ( locator_or_crumbs, fallback ) ->
+  return FI.get O, locator_or_crumbs, fallback
+
+# #-----------------------------------------------------------------------------------------------------------
+# get.moon_symbol_from_quarter = ( moon_quarter ) ->
+#   locator = '/values/moon'
+#   R       = O.get FI.get O, locator
+#   return R[ moon_quarter ]
+
+# #-----------------------------------------------------------------------------------------------------------
+# get.weekday_from_idx = ( weekday_idx ) ->
+#   locator = '/values/weekdays'
+#   R       = O.get FI.get O, locator
+#   return R[ weekday_idx ]
+
+# #-----------------------------------------------------------------------------------------------------------
+# get.month_from_idx = ( month_idx ) ->
+#   locator = '/values/months'
+#   R       = O.get FI.get O, locator
+#   return R[ month_idx ]
+
+
+############################################################################################################
+FI                        = require 'coffeenode-fillin'
+module.exports            = O = {}
+misfit                    = {}
+
+#...........................................................................................................
+O[ 'settings' ] = settings
+O[ 'values'   ] = values
+O[ 'data'     ] = data
+O[ 'get'      ] = get
+
+FI.fill_in O
+
+

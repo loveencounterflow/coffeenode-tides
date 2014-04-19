@@ -20,7 +20,7 @@ warn                      = TRM.get_logger 'warn',      badge
 help                      = TRM.get_logger 'help',      badge
 echo                      = TRM.echo.bind TRM
 #...........................................................................................................
-eventually                = process.nextTick
+# eventually                = process.nextTick
 # XDate                     = require 'xdate'
 TEX                       = require 'jizura-xelatex'
 TIDES                     = require './main'
@@ -61,18 +61,18 @@ thinspace                 = TEX.raw '$\\thinspace$'
 thinspace                 = '\u2009'
 # thinspace                 = '\u200a'
 
-#-----------------------------------------------------------------------------------------------------------
-@moon_symbols =
-  'unicode': [ '⬤', '◐', '◯', '◑', ]
-  'plain':    [
-    '\\newmoon'
-    '\\rightmoon'
-    '\\fullmoon'
-    '\\leftmoon' ]
-    # ( TEX.raw '\\newmoon'   ),
-    # ( TEX.raw '\\rightmoon' ),
-    # ( TEX.raw '\\fullmoon'  ),
-    # ( TEX.raw '\\leftmoon'  ), ]
+# #-----------------------------------------------------------------------------------------------------------
+# @moon_symbols =
+#   'unicode': [ '⬤', '◐', '◯', '◑', ]
+#   'plain':    [
+#     '\\newmoon'
+#     '\\rightmoon'
+#     '\\fullmoon'
+#     '\\leftmoon' ]
+#     # ( TEX.raw '\\newmoon'   ),
+#     # ( TEX.raw '\\rightmoon' ),
+#     # ( TEX.raw '\\fullmoon'  ),
+#     # ( TEX.raw '\\leftmoon'  ), ]
 
 #-----------------------------------------------------------------------------------------------------------
 @weekday_names =
@@ -110,63 +110,63 @@ thinspace                 = '\u2009'
     ' '
     month ]
 
-#-----------------------------------------------------------------------------------------------------------
-@new_row = ( table_row ) ->
-  R   = TEX.new_container []
-  #.........................................................................................................
-  add = ( P ... ) ->
-    TEX.push R, p for p in P
-    return R
-  #.........................................................................................................
-  if table_row[ 'is-new-day' ]
-    add cline '2-4'
-  #.........................................................................................................
-  if table_row[ 'day-change' ]
-    add cline '5-5'
-  #.........................................................................................................
-  if ( moon_quarter = table_row[ 'moon-quarter' ] )?
-    add @moon_symbols[ 'plain' ][ moon_quarter ]
-  add next_cell
-  #.........................................................................................................
-  if table_row[ 'date' ]?
-    day = table_row[ 'date' ][ 2 ]
-    # day = '\\ ' + day if day.length is 1
-    add TEX.new_group [
-      TEX.new_loner 'itFont'
-      day ]
-    add '.'
-    # add day, '.'
-  add next_cell
-  #.........................................................................................................
-  if table_row[ 'date' ]?
-    weekday_idx   = table_row[ 'weekday-idx' ]
-    weekday_name  = @weekday_names[ 'dutch' ][ 'abbreviated' ][ weekday_idx ]
-    ### TAINT use TeX commands for formatting ###
-    switch weekday_idx
-      when 6
-        ### TAINT color repeated here ###
-        add TEX.new_group [
-          TEX.new_command 'color', 'DarkRed'
-          TEX.new_loner 'itFont'
-          weekday_name ]
-      else
-        add TEX.new_group [
-          # TEX.new_command 'color', 'DarkRed',
-          TEX.new_loner 'itFont'
-          weekday_name ]
-    # add ''
-  add next_cell
-  #.........................................................................................................
-  if ( time = table_row[ 'hi-water-time' ] )?
-    add time[ 0 ], thinspace, ':', thinspace, time[ 1 ]
-  add next_cell
-  #.........................................................................................................
-  if ( time = table_row[ 'lo-water-time' ] )?
-    add time[ 0 ], thinspace, ':', thinspace, time[ 1 ]
-  add next_cell
-  #.........................................................................................................
-  add next_line
-  return R
+# #-----------------------------------------------------------------------------------------------------------
+# @new_row = ( table_row ) ->
+#   R   = TEX.new_container []
+#   #.........................................................................................................
+#   add = ( P ... ) ->
+#     TEX.push R, p for p in P
+#     return R
+#   #.........................................................................................................
+#   if table_row[ 'is-new-day' ]
+#     add cline '2-4'
+#   #.........................................................................................................
+#   if table_row[ 'day-change' ]
+#     add cline '5-5'
+#   #.........................................................................................................
+#   if ( moon_quarter = table_row[ 'moon-quarter' ] )?
+#     add @moon_symbols[ 'plain' ][ moon_quarter ]
+#   add next_cell
+#   #.........................................................................................................
+#   if table_row[ 'date' ]?
+#     day = table_row[ 'date' ][ 2 ]
+#     # day = '\\ ' + day if day.length is 1
+#     add TEX.new_group [
+#       TEX.new_loner 'itFont'
+#       day ]
+#     add '.'
+#     # add day, '.'
+#   add next_cell
+#   #.........................................................................................................
+#   if table_row[ 'date' ]?
+#     weekday_idx   = table_row[ 'weekday-idx' ]
+#     weekday_name  = @weekday_names[ 'dutch' ][ 'abbreviated' ][ weekday_idx ]
+#     ### TAINT use TeX commands for formatting ###
+#     switch weekday_idx
+#       when 6
+#         ### TAINT color repeated here ###
+#         add TEX.new_group [
+#           TEX.new_command 'color', 'DarkRed'
+#           TEX.new_loner 'itFont'
+#           weekday_name ]
+#       else
+#         add TEX.new_group [
+#           # TEX.new_command 'color', 'DarkRed',
+#           TEX.new_loner 'itFont'
+#           weekday_name ]
+#     # add ''
+#   add next_cell
+#   #.........................................................................................................
+#   if ( time = table_row[ 'hi-water-time' ] )?
+#     add time[ 0 ], thinspace, ':', thinspace, time[ 1 ]
+#   add next_cell
+#   #.........................................................................................................
+#   if ( time = table_row[ 'lo-water-time' ] )?
+#     add time[ 0 ], thinspace, ':', thinspace, time[ 1 ]
+#   add next_cell
+#   #.........................................................................................................
+#   add next_line
+#   return R
 
 #-----------------------------------------------------------------------------------------------------------
 @draw_curves = ( page_nr, dots, handler ) ->
@@ -246,7 +246,7 @@ thinspace                 = '\u2009'
     #.......................................................................................................
     ### TAINT Unfortunate solution to again ask for moon quarter ###
     if moon_quarter?
-      moon_symbol = @moon_symbols[ 'plain' ][ moon_quarter ]
+      moon_symbol = TIDES.options.get.moon_symbol_from_quarter moon_quarter
       echo """\\paRight{10mm}{#{y_position}}{#{moon_symbol}}"""
     #.......................................................................................................
     unless last_day is this_day
@@ -278,5 +278,12 @@ thinspace                 = '\u2009'
 
 ############################################################################################################
 unless module.parent?
-  # @main
-  debug JSON.stringify TIDES.options, null, '  '
+  # @main()
+  # debug JSON.stringify TIDES.options, null, '  '
+  debug TIDES[ 'options' ][ 'values' ][ 'moon' ][ 0 ]
+  debug ( TIDES.options.get '/values/moon' )[ 0 ]
+  debug TIDES.options.get '/values/moon/0'
+  FI = require 'coffeenode-fillin'
+  fill_in = FI.new_method()
+  debug TIDES.options.get fill_in '/values/moon/$quarter', quarter: 0
+  debug ( '%' + ( chr.charCodeAt 0 ).toString 16 for chr in FI.default_matcher.source ).join ''
