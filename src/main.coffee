@@ -24,7 +24,7 @@ echo                      = TRM.echo.bind TRM
 @options                  = require '../options'
 #...........................................................................................................
 eventually                = process.nextTick
-XDate                     = require 'xdate'
+moment                    = require 'moment-timezone'
 
 #-----------------------------------------------------------------------------------------------------------
 @moon_quarter_by_phases =
@@ -35,22 +35,31 @@ XDate                     = require 'xdate'
 
 
 #-----------------------------------------------------------------------------------------------------------
-@new_tidal_record = ( source_line_nr, moon_quarter, date, time, is_dst, hl, height ) ->
+@new_tide_event = ( source_line_nr, date, is_dst, hl, height ) ->
   R =
-    '~isa':             'GEZEITEN/tidal-record'
+    '~isa':             'TIDES/tide-event'
     'source-line-nr':   source_line_nr
-    'moon-quarter':     moon_quarter
-    'weekday-idx':      null
     'date':             date
-    'time':             time
     'is-dst':           is_dst
     'hl':               hl
     'height':           height
+    'moon':             null
   #.........................................................................................................
   return R
 
 #-----------------------------------------------------------------------------------------------------------
-@walk_tidal_raw_fields = ( route, handler ) ->
+@new_moon_event = ( source_line_nr, date, is_dst, moon_quarter ) ->
+  R =
+    '~isa':             'TIDES/moon-event'
+    'source-line-nr':   source_line_nr
+    'date':             date
+    'is-dst':           is_dst
+    'quarter':          moon_quarter
+  #.........................................................................................................
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
+@walk_raw_fields = ( route, handler ) ->
   #---------------------------------------------------------------------------------------------------------
   FS.lines_of route, ( error, source_line, source_line_nr ) =>
     return handler error if error?
@@ -64,22 +73,17 @@ XDate                     = require 'xdate'
   #---------------------------------------------------------------------------------------------------------
   return null
 
-new_and_full_moons = []
-
 #-----------------------------------------------------------------------------------------------------------
-@walk_tidal_records = ( route, handler ) ->
-  record_idx = -1
+@walk_tide_and_moon_events = ( route, handler ) ->
+  record_idx        = -1
+  datetime_format   = @options[ 'data' ][ 'date' ][ 'raw-format' ]
+  timezone          = @options[ 'data' ][ 'date' ][ 'timezone' ]
   #---------------------------------------------------------------------------------------------------------
-  @walk_tidal_raw_fields route, ( error, fields, source_line, source_line_nr ) =>
+  @walk_raw_fields route, ( error, fields, source_line, source_line_nr ) =>
     return handler error if error?
     #.......................................................................................................
     if fields is null
-      debug new_and_full_moons # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       last_record_idx = null
-      for this_record_idx, idx in new_and_full_moons
-        if last_record_idx?
-          info this_record_idx - last_record_idx
-        last_record_idx = this_record_idx
       return handler null, null
     #.......................................................................................................
     columns     = []
@@ -89,43 +93,27 @@ new_and_full_moons = []
       #.....................................................................................................
       when 5
         [ date_txt
-          time_txt
+          tide_time_txt
           tide
           height_txt ]  = fields
         moon_phase      = null
+        moon_quarter    = null
+        moon_time_txt   = null
       #.....................................................................................................
       when 7
         [ date_txt
           moon_phase
-          ignored
-          time_txt
+          moon_time_txt
+          tide_time_txt
           tide
           height_txt ]  = fields
+        moon_quarter    = @options[ 'data' ][ 'moon' ][ 'quarter-by-phases' ][ moon_phase ]
       #.....................................................................................................
       else
         return handler new Error "unable to parse line #{source_line_nr}: #{rpr source_line}"
     #.......................................................................................................
-    [ day_txt, month_txt, year_txt, ] = date_txt.split '/'
-    [ hour_txt, minute_txt,         ] = time_txt.split ':'
-    #.......................................................................................................
-    is_dst = no
-    if /\+$/.test minute_txt
-      minute_txt    = minute_txt[ ... minute_txt.length - 1 ]
-      is_dst        = yes
-    #.......................................................................................................
-    ### TAINT make typography of date & time configurable ###
-    # hour_txt      =  hour_txt.replace /^0/, ' '
-    day_txt       =   day_txt.replace /^0/, ' '
-    month_txt     = month_txt.replace /^0/, ' '
-    height        = parseInt height_txt, 10
-    date          = [ year_txt, month_txt, day_txt, ]
-    time          = [ hour_txt, minute_txt, ]
-    #.......................................................................................................
-    moon_quarter  = null
-    if moon_phase?
-      moon_quarter  = @moon_quarter_by_phases[ moon_phase ]
-      if moon_quarter is 0 or moon_quarter is 2
-        new_and_full_moons.push record_idx
+    height  = parseInt height_txt, 10
+    is_dst  = /\+$/.test tide_time_txt
     #.......................................................................................................
     switch tide
       when 'LW' then hl = 'l'
@@ -133,30 +121,120 @@ new_and_full_moons = []
       else
         return handler new Error "unable to parse tide entry on line #{source_line_nr}: #{rpr tide}"
     #.......................................................................................................
-    Z = @new_tidal_record source_line_nr, moon_quarter, date, time, is_dst, hl, height
+    tide_date = moment.tz "#{date_txt} #{tide_time_txt}", datetime_format, timezone
+    ### TAINT use @options ###
+    tide_date.lang 'nl'
+    handler null, @new_tide_event source_line_nr, tide_date, is_dst, hl, height
     #.......................................................................................................
-    ### TAINT this procedure will likely work if the place of processing is in the same timezone as the
-    place where the given data refers to; in the more general case, however, JavaScript as running in NodeJS
-    will probably understand dates in terms of the current local at the place of processing and cause
-    subtle or not so subtle mismatches between times and dates as intended and as processed.
-
-    Also, under the assumptions that each day appears at least once in the data and all days are called up
-    sequentially, it suffices to calculate the weekday for the first day called and the cycle through
-    the list of weekday names. ###
-    xdate               = new XDate year_txt, month_txt, day_txt
-    Z[ 'weekday-idx' ]  = ( xdate.getDay() + 6 ) % 7
-    #.......................................................................................................
-    handler null, Z
+    return unless moon_phase?
+    moon_date = moment.tz "#{date_txt} #{moon_time_txt}", datetime_format, timezone
+    ### TAINT use @options ###
+    moon_date.lang 'nl'
+    handler null, @new_moon_event source_line_nr, moon_date, is_dst, moon_quarter
   #---------------------------------------------------------------------------------------------------------
   return null
 
+#-----------------------------------------------------------------------------------------------------------
+@walk = ( route, handler ) ->
+  tide_buffer             = []
+  tide_buffer_max_length  = 6
+  moon_buffer             = []
+  waiting_for_moon        = no
+  #---------------------------------------------------------------------------------------------------------
+  find_closest_tide_for_moon_event = =>
+    return if moon_buffer.length is 0
+    if moon_buffer.length > 1
+      return handler new Error "too many moon events in buffer (#{moon_buffer.length})"
+    moon_event  = moon_buffer.shift()
+    moon_date   = moon_event[ 'date' ]
+    #.....................................................................................................
+    dt_min = Infinity
+    for tide_event in tide_buffer
+      tide_date     = tide_event[ 'date' ]
+      dt            = Math.abs ( moment.duration tide_date.diff moon_date ).asHours()
+      continue if dt > dt_min
+      dt_min        = dt
+      target_event  = tide_event
+    #.....................................................................................................
+    target_event[ 'moon' ] = moon_event
+  #---------------------------------------------------------------------------------------------------------
+  clear_tide_buffer = ( max_length ) =>
+    while tide_buffer.length > max_length
+      # whisper "clearing tide buffer"
+      handler null, tide_buffer.shift()
+  #---------------------------------------------------------------------------------------------------------
+  @walk_tide_and_moon_events route, ( error, event ) =>
+    return handler error if error?
+    #.......................................................................................................
+    ### Release remaining buffer contents and finish: ###
+    ### TAINT must look for remaining moon entries in buffer ###
+    if event is null
+      find_closest_tide_for_moon_event()
+      clear_tide_buffer 0
+      if moon_buffer.length isnt 0
+        return handler new Error "found #{moon_buffer.length} unprocessed moon events"
+      return handler null, null
+    #.......................................................................................................
+    type = event[ '~isa' ]
+    if type is 'TIDES/tide-event'
+      tide_buffer.push event
+    else
+      moon_buffer.push event
+      waiting_for_moon = yes
+    #.......................................................................................................
+    if waiting_for_moon
+      if ( tide_buffer.length >= tide_buffer_max_length )
+        find_closest_tide_for_moon_event()
+        waiting_for_moon = no
+        clear_tide_buffer 0
+    #.......................................................................................................
+    else
+      clear_tide_buffer 2
+
+
+#===========================================================================================================
+# DEMOS
+#-----------------------------------------------------------------------------------------------------------
+@_demo_walk_tide_and_moon_events = ->
+  TIDES = @
+  route = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
+  TIDES.walk_tide_and_moon_events route, ( error, event ) ->
+    throw error if error?
+    return if event is null
+    date = event[ 'date' ]
+    date_txt  = date.format 'dddd, D. MMMM YYYY HH:mm'
+    if TYPES.isa event, 'TIDES/moon-event'
+      quarter = event[ 'quarter' ]
+      symbol  = TIDES.options[ 'data' ][ 'moon' ][ 'unicode' ][ quarter ]
+      log TRM.lime date_txt, quarter, symbol
+    else
+      hl      = event[ 'hl' ]
+      height  = event[ 'height' ]
+      log TRM.gold date_txt, hl, height
+
+#-----------------------------------------------------------------------------------------------------------
+@_demo_walk = ->
+  TIDES = @
+  route = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
+  TIDES.walk route, ( error, event ) ->
+    throw error if error?
+    return if event is null
+    date      = event[ 'date' ]
+    date_txt  = date.format 'dddd, D. MMMM YYYY HH:mm'
+    hl        = event[ 'hl' ]
+    height    = event[ 'height' ]
+    event_txt = TRM.gold date_txt, hl, height
+    if ( moon_event = event[ 'moon' ] )?
+      date        = moon_event[ 'date' ]
+      date_txt    = date.format 'dddd, D. MMMM YYYY HH:mm'
+      quarter     = moon_event[ 'quarter' ]
+      symbol      = TIDES.options[ 'data' ][ 'moon' ][ 'unicode' ][ quarter ]
+      event_txt  += ' ' + TRM.lime date_txt, quarter, symbol
+    log event_txt
 
 
 ############################################################################################################
 unless module.parent?
-  TIDES = @
-  route = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
-  TIDES.walk_table_rows route, ( error, table_row ) ->
-    throw error if error?
-    info TRM.rainbow table_row
+  # @_demo_walk_tide_and_moon_events()
+  @_demo_walk()
 

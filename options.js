@@ -24,7 +24,17 @@
   };
 
   data = {
+    date: {
+      timezone: 'Europe/Amsterdam',
+      'raw-format': 'DD/MM/YYYY HH:mm'
+    },
     moon: {
+      'quarter-by-phases': {
+        'NM': 0,
+        'EK': 1,
+        'VM': 2,
+        'LK': 3
+      },
       unicode: ['⬤', '◐', '◯', '◑'],
       plain: ['\\newmoon', '\\rightmoon', '\\fullmoon', '\\leftmoon']
     },

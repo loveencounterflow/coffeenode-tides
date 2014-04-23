@@ -50,6 +50,9 @@ multicolumn               = TEX.make_multicommand 'multicolumn', 3
 paLeft                    = TEX.make_multicommand 'paLeft', 3
 paCenter                  = TEX.make_multicommand 'paCenter', 3
 paRight                   = TEX.make_multicommand 'paRight', 3
+paLeftGauge               = TEX.make_multicommand 'paLeftGauge', 3
+paCenterGauge             = TEX.make_multicommand 'paCenterGauge', 3
+paRightGauge              = TEX.make_multicommand 'paRightGauge', 3
 # fncrNG                    = TEX.make_multicommand 'fncrNG', 3
 # fncrC                     = TEX.make_multicommand 'fncrC', 3
 hrule                     = TEX.raw """\n\n\\hrule\n\n"""
@@ -86,18 +89,25 @@ thinspace                 = '\u2009'
   position_y  = ( TIDES.options.get '/values/layout/month/odd/position/y' ) + 'mm'
   #.........................................................................................................
   switch alignment = align_x
-    when 'left'   then pa_command = paLeft
-    when 'center' then pa_command = paCenter
-    when 'right'  then pa_command = paRight
+    when 'left'   then pa_command = paLeftGauge
+    when 'center' then pa_command = paCenterGauge
+    when 'right'  then pa_command = paRightGauge
     else throw new Error "unknown alignment #{rpr alignment}"
   #.........................................................................................................
-  return TEX.new_group [
+  content = TEX.new_group [
     TEX.new_loner 'scFont'
     TEX.new_loner 'large'
-    TEX.new_command 'paGauge', [ month_name, ]
     TEX.new_command 'color', 'DarkRed'
-    pa_command [ position_x, position_y, month_name ]
-    ]
+    month_name ]
+  return pa_command [ position_x, position_y, content, ]
+  # #.........................................................................................................
+  # content = TEX.new_container [ ( TEX.new_command 'color', 'DarkRed'), month_name ]
+  # return TEX.new_group [
+  #   TEX.new_loner 'scFont'
+  #   TEX.new_loner 'large'
+  #   TEX.new_command 'paGauge', [ month_name, ]
+  #   pa_command [ position_x, position_y, content, ]
+  #   ]
 
 # #-----------------------------------------------------------------------------------------------------------
 # @new_row = ( table_row ) ->
