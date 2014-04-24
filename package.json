@@ -22,6 +22,7 @@
     "coffeenode-trm": "^0.1.x",
     "coffeenode-types": "^0.1.x",
     "coffeenode-fillin": "^0.1.1",
-    "moment-timezone": "0.0.6"
+    "moment-timezone": "0.0.6",
+    "lodash": "^2.4.1"
   }
 }

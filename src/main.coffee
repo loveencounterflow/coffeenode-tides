@@ -198,7 +198,8 @@ moment                    = require 'moment-timezone'
 @_demo_walk_tide_and_moon_events = ->
   TIDES = @
   route = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
-  TIDES.walk_tide_and_moon_events route, ( error, event ) ->
+  #---------------------------------------------------------------------------------------------------------
+  TIDES.walk_tide_and_moon_events route, ( error, event ) =>
     throw error if error?
     return if event is null
     date = event[ 'date' ]
@@ -211,26 +212,46 @@ moment                    = require 'moment-timezone'
       hl      = event[ 'hl' ]
       height  = event[ 'height' ]
       log TRM.gold date_txt, hl, height
+  #---------------------------------------------------------------------------------------------------------
+  return null
 
 #-----------------------------------------------------------------------------------------------------------
 @_demo_walk = ->
-  TIDES = @
-  route = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
-  TIDES.walk route, ( error, event ) ->
+  _                 = require 'lodash'
+  TIDES             = @
+  route             = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
+  tide_moon_counts  = []
+  tide_idx          = 0
+  last_moon_idx     = null
+  #---------------------------------------------------------------------------------------------------------
+  TIDES.walk route, ( error, event ) =>
     throw error if error?
-    return if event is null
+    #.......................................................................................................
+    if event is null
+      # info tide_moon_counts
+      info _.countBy tide_moon_counts
+      return
+    #.......................................................................................................
+    tide_idx += 1
     date      = event[ 'date' ]
-    date_txt  = date.format 'dddd, D. MMMM YYYY HH:mm'
+    date_txt  = date.format 'ddd, DD. MMM YYYY HH:mm'
     hl        = event[ 'hl' ]
     height    = event[ 'height' ]
     event_txt = TRM.gold date_txt, hl, height
+    #.......................................................................................................
     if ( moon_event = event[ 'moon' ] )?
-      date        = moon_event[ 'date' ]
-      date_txt    = date.format 'dddd, D. MMMM YYYY HH:mm'
-      quarter     = moon_event[ 'quarter' ]
-      symbol      = TIDES.options[ 'data' ][ 'moon' ][ 'unicode' ][ quarter ]
-      event_txt  += ' ' + TRM.lime date_txt, quarter, symbol
+      if ( moon_event[ 'quarter' ] is 0 ) # or ( moon_event[ 'quarter' ] is 2 )
+        tide_moon_counts.push tide_idx - last_moon_idx if last_moon_idx?
+        last_moon_idx   = tide_idx
+      date            = moon_event[ 'date' ]
+      date_txt        = date.format 'ddd, D. MMM YYYY HH:mm'
+      quarter         = moon_event[ 'quarter' ]
+      symbol          = TIDES.options[ 'data' ][ 'moon' ][ 'unicode' ][ quarter ]
+      event_txt      += ' ' + TRM.lime date_txt, quarter, symbol
+    #.......................................................................................................
     log event_txt
+  #---------------------------------------------------------------------------------------------------------
+  return null
 
 
 ############################################################################################################

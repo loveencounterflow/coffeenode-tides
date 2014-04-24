@@ -21,8 +21,8 @@ settings =
 ############################################################################################################
 values =
   #.........................................................................................................
-  weekdays:   '${/data/translations/${/settings/language}/weekdays/${/settings/styles/weekdays}}'
-  months:     '${/data/translations/${/settings/language}/months/${/settings/styles/months}}'
+  # weekdays:   '${/data/translations/${/settings/language}/weekdays/${/settings/styles/weekdays}}'
+  # months:     '${/data/translations/${/settings/language}/months/${/settings/styles/months}}'
   moon:       '${/data/moon/${/settings/styles/moon}}'
   layout:     '${/data/layouts/${/settings/styles/layout}}'
 
@@ -47,37 +47,37 @@ data =
       '\\fullmoon'
       '\\leftmoon' ]
   #.........................................................................................................
-  translations:
-    #.......................................................................................................
-    nl_NL:
-      weekdays:
-        #...................................................................................................
-        full:         [ 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag', ]
-        abbreviated:  [ 'ma', 'di', 'wo', 'do', 'vr', 'za', 'zo', ]
-      #.....................................................................................................
-      months:
-        full:         [ "januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december", ]
-        abbreviated:  [ "jan", "feb", "maart", "apr", "mei", "juni", "juli", "aug", "sept", "oct", "nov", "dec", ]
-    #.......................................................................................................
-    en_US:
-      #.....................................................................................................
-      weekdays:
-        full:         [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', ]
-        abbreviated:  [ 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su', ]
-      #.....................................................................................................
-      months:
-        full:         [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", ]
-        abbreviated:  [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec", ]
-    #.......................................................................................................
-    de_DE:
-      #.....................................................................................................
-      weekdays:
-        full:         [ 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag', ]
-        abbreviated:  [ 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So', ]
-      #.....................................................................................................
-      months:
-        full:         [ "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember", ]
-        abbreviated:  [ "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sept", "Okt", "Nov", "Dez", ]
+  # translations:
+  #   #.......................................................................................................
+  #   nl_NL:
+  #     weekdays:
+  #       #...................................................................................................
+  #       full:         [ 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag', ]
+  #       abbreviated:  [ 'ma', 'di', 'wo', 'do', 'vr', 'za', 'zo', ]
+  #     #.....................................................................................................
+  #     months:
+  #       full:         [ "januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december", ]
+  #       abbreviated:  [ "jan", "feb", "maart", "apr", "mei", "juni", "juli", "aug", "sept", "oct", "nov", "dec", ]
+  #   #.......................................................................................................
+  #   en_US:
+  #     #.....................................................................................................
+  #     weekdays:
+  #       full:         [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', ]
+  #       abbreviated:  [ 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su', ]
+  #     #.....................................................................................................
+  #     months:
+  #       full:         [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", ]
+  #       abbreviated:  [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec", ]
+  #   #.......................................................................................................
+  #   de_DE:
+  #     #.....................................................................................................
+  #     weekdays:
+  #       full:         [ 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag', ]
+  #       abbreviated:  [ 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So', ]
+  #     #.....................................................................................................
+  #     months:
+  #       full:         [ "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember", ]
+  #       abbreviated:  [ "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sept", "Okt", "Nov", "Dez", ]
   #.........................................................................................................
   ### All measurements in mm (this may change) ###
   layouts:

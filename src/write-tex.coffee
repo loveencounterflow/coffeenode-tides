@@ -53,32 +53,24 @@ paRight                   = TEX.make_multicommand 'paRight', 3
 paLeftGauge               = TEX.make_multicommand 'paLeftGauge', 3
 paCenterGauge             = TEX.make_multicommand 'paCenterGauge', 3
 paRightGauge              = TEX.make_multicommand 'paRightGauge', 3
-# fncrNG                    = TEX.make_multicommand 'fncrNG', 3
-# fncrC                     = TEX.make_multicommand 'fncrC', 3
-hrule                     = TEX.raw """\n\n\\hrule\n\n"""
-hline                     = TEX.raw """\n\\hline\n"""
-cline                     = TEX.make_command 'cline'
-@new_tabular              = TEX.make_environment 'tabular'
-next_line                 = TEX.raw '\\\\\n'
+# hrule                     = TEX.raw """\n\n\\hrule\n\n"""
+# hline                     = TEX.raw """\n\\hline\n"""
+# cline                     = TEX.make_command 'cline'
+# @new_tabular              = TEX.make_environment 'tabular'
+# next_cell                 = TEX.raw ' & '
+# next_line                 = TEX.raw '\\\\\n'
 newline                   = TEX.raw '\n'
-next_cell                 = TEX.raw ' & '
 esc                       = TEX._escape.bind TEX
-thinspace                 = TEX.raw '$\\thinspace$'
+# thinspace                 = TEX.raw '$\\thinspace$'
 thinspace                 = '\u2009'
 # thinspace                 = '\u200a'
 
 
-#-----------------------------------------------------------------------------------------------------------
-@_get_month_name = ( month_nr ) ->
-  month_nr  = @_as_integer month_nr
-  # debug TIDES.options
-  R         = TIDES.options.get "/values/months/#{month_nr - 1}"
-  throw new Error "unable to understand month specification  #{rpr month_nr}" unless R?
-  return R
 
 #-----------------------------------------------------------------------------------------------------------
-@format_month_name = ( month_nr ) ->
-  month_name = @_get_month_name month_nr
+@format_month_name = ( date ) ->
+  ### TAINT make formats configurable ###
+  month_name = date.format 'MMMM'
   month_name = month_name[ 0 ].toUpperCase() + month_name[ 1 .. ]
   #.........................................................................................................
   # echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[width=118mm]{#{route}}}"""
@@ -100,81 +92,15 @@ thinspace                 = '\u2009'
     TEX.new_command 'color', 'DarkRed'
     month_name ]
   return pa_command [ position_x, position_y, content, ]
-  # #.........................................................................................................
-  # content = TEX.new_container [ ( TEX.new_command 'color', 'DarkRed'), month_name ]
-  # return TEX.new_group [
-  #   TEX.new_loner 'scFont'
-  #   TEX.new_loner 'large'
-  #   TEX.new_command 'paGauge', [ month_name, ]
-  #   pa_command [ position_x, position_y, content, ]
-  #   ]
-
-# #-----------------------------------------------------------------------------------------------------------
-# @new_row = ( table_row ) ->
-#   R   = TEX.new_container []
-#   #.........................................................................................................
-#   add = ( P ... ) ->
-#     TEX.push R, p for p in P
-#     return R
-#   #.........................................................................................................
-#   if table_row[ 'is-new-day' ]
-#     add cline '2-4'
-#   #.........................................................................................................
-#   if table_row[ 'day-change' ]
-#     add cline '5-5'
-#   #.........................................................................................................
-#   if ( moon_quarter = table_row[ 'moon-quarter' ] )?
-#     add @moon_symbols[ 'plain' ][ moon_quarter ]
-#   add next_cell
-#   #.........................................................................................................
-#   if table_row[ 'date' ]?
-#     day = table_row[ 'date' ][ 2 ]
-#     # day = '\\ ' + day if day.length is 1
-#     add TEX.new_group [
-#       TEX.new_loner 'itFont'
-#       day ]
-#     add '.'
-#     # add day, '.'
-#   add next_cell
-#   #.........................................................................................................
-#   if table_row[ 'date' ]?
-#     weekday_idx   = table_row[ 'weekday-idx' ]
-#     weekday_name  = @weekday_names[ 'dutch' ][ 'abbreviated' ][ weekday_idx ]
-#     ### TAINT use TeX commands for formatting ###
-#     switch weekday_idx
-#       when 6
-#         ### TAINT color repeated here ###
-#         add TEX.new_group [
-#           TEX.new_command 'color', 'DarkRed'
-#           TEX.new_loner 'itFont'
-#           weekday_name ]
-#       else
-#         add TEX.new_group [
-#           # TEX.new_command 'color', 'DarkRed',
-#           TEX.new_loner 'itFont'
-#           weekday_name ]
-#     # add ''
-#   add next_cell
-#   #.........................................................................................................
-#   if ( time = table_row[ 'hi-water-time' ] )?
-#     add time[ 0 ], thinspace, ':', thinspace, time[ 1 ]
-#   add next_cell
-#   #.........................................................................................................
-#   if ( time = table_row[ 'lo-water-time' ] )?
-#     add time[ 0 ], thinspace, ':', thinspace, time[ 1 ]
-#   add next_cell
-#   #.........................................................................................................
-#   add next_line
-#   return R
 
 #-----------------------------------------------------------------------------------------------------------
 @draw_curves = ( page_nr, dots, handler ) ->
   return @_draw_curves_with_gm page_nr, dots, handler
 
 #-----------------------------------------------------------------------------------------------------------
-@y_position_from_datetime = ( row_idx, time, module, unit = 'mm' ) ->
+@_y_position_from_row_idx = ( row_idx, module, unit = 'mm' ) ->
+  ### TAINT make configurable ###
   ### TAINT use proper units datatype ###
-  ### TAINT make prescision configurable ###
   value = ( row_idx + 1 ) * module
   value = value.toFixed 2
   return "#{value}#{unit}"
@@ -194,29 +120,26 @@ thinspace                 = '\u2009'
   wrote_header  = no
   echo preamble
   #---------------------------------------------------------------------------------------------------------
-  TIDES.walk_tidal_records route, ( error, trc ) =>
+  TIDES.walk route, ( error, tide_event ) =>
     throw error if error?
-    # debug trc
     #.......................................................................................................
-    if trc is null
+    if tide_event is null
       # echo TEX.rpr @draw_curves hi_dots, lo_dots
       echo postscript
       return
     #.......................................................................................................
     row_idx += 1
-    this_date       = trc[ 'date' ]
-    this_time       = trc[ 'time' ]
-    [ this_year
-      this_month
-      this_day    ] = this_date
-    # return null unless this_month is ' 1' # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    moon_event  = tide_event[ 'moon' ]
+    date        = tide_event[ 'date' ]
+    this_day    = date.date()
+    this_month  = date.month()
     #.......................................................................................................
     unless wrote_header
-      this_month_tex = @format_month_name this_month
+      this_month_tex = @format_month_name date
       echo TEX.rpr this_month_tex
       wrote_header = yes
     #.......................................................................................................
-    if ( moon_quarter = trc[ 'moon-quarter' ] )?
+    if ( moon_quarter = tide_event[ 'moon-quarter' ] )?
       if moon_quarter is 0 or moon_quarter is 2
         ### TAINT collect these in a 'newpage' function ###
         row_idx   = 0
@@ -242,7 +165,7 @@ thinspace                 = '\u2009'
     line_count  = 62
     module      = textheight / line_count
     unit        = 'mm'
-    y_position  = @y_position_from_datetime row_idx, this_time, module, unit
+    y_position  = @_y_position_from_row_idx row_idx, module, unit
     #.......................................................................................................
     ### TAINT Unfortunate solution to again ask for moon quarter ###
     if moon_quarter?
@@ -252,14 +175,16 @@ thinspace                 = '\u2009'
     unless last_day is this_day
       last_day  = this_day
       ### TAINT days y to be adjusted ###
-      echo """\\paRight{20mm}{#{y_position}}{#{this_date[1]}-#{this_date[2]}}"""
+      month_txt = date.format 'MM'
+      day_txt   = date.format 'DD'
+      echo """\\paRight{20mm}{#{y_position}}{#{month_txt}-#{day_txt}}"""
     #.......................................................................................................
     unless last_month is this_month
       last_month = this_month
-      echo """\\typeout{\\trmSolCyan{#{this_date.join '-'}}}"""
+      echo """\\typeout{\\trmSolCyan{#{date.format 'YYYY-MM-DD'}}}"""
     #.......................................................................................................
-    hl      = trc[ 'hl' ]
-    height  = trc[ 'height' ]
+    hl      = tide_event[ 'hl' ]
+    height  = tide_event[ 'height' ]
     dots.push [ hl, [ height, dots.length, ], ]
     #.......................................................................................................
     switch hl
@@ -271,14 +196,16 @@ thinspace                 = '\u2009'
         throw new Error "expected `h` or `l` for hl indicator, got #{rpr hl}"
     #.......................................................................................................
     ### TAINT use proper escaping ###
-    dst = if trc[ 'is-dst' ] then '+' else ''
-    echo """\\paRight{#{x_position}}{#{y_position}}{#{dst + this_time[0]} : #{this_time[1]}}"""
+    dst       = if tide_event[ 'is-dst' ] then '+' else ''
+    time_txt  = date.format "HH[#{thinspace}]:[#{thinspace}]mm"
+    echo """\\paRight{#{x_position}}{#{y_position}}{#{time_txt}}"""
 
 
 
 ############################################################################################################
 unless module.parent?
   @main()
+  # debug TIDES[ 'options' ]
   # debug TIDES[ 'options' ][ 'values' ][ 'moon' ][ 0 ]
   # debug ( TIDES.options.get '/values/moon' )[ 0 ]
   # debug TIDES.options.get '/values/moon/0'
