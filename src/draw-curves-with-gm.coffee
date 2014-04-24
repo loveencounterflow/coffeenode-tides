@@ -19,8 +19,10 @@ debug                     = TRM.get_logger 'debug',     badge
 warn                      = TRM.get_logger 'warn',      badge
 help                      = TRM.get_logger 'help',      badge
 echo                      = TRM.echo.bind TRM
+TIDES                     = require './main'
 GM                        = require 'gm'
 
+### TAINT must go into TIDES/options ###
 options =
   'pixels-per-mm':    15
   # 'pixels-per-mm':    3
@@ -127,6 +129,15 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
     .stroke 'black', 1
     .drawLine x0, y0, x1, y1
   #.........................................................................................................
+  ### draw ( min, max ) ( h, l ) verticals ###
+  for name in 'max-l-height min-h-height max-h-height'.split /\s+/
+    x0 = x1 = @_image_px_from_real_cm TIDES[ 'options' ][ 'data' ][ 'tides' ][ name ]
+    y0 = @_image_px_from_y_raw  0
+    y1 = @_image_px_from_y_raw 60
+    image
+      .stroke 'red', 1
+      .drawLine x0, y0, x1, y1
+  #.........................................................................................................
   ### draw NAP vertical ###
   ### TAINT must get NAP - LAT difference from RWS for each location ###
   x0 = x1 = @_image_px_from_real_cm 0 + 203
@@ -138,7 +149,7 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
   #.........................................................................................................
   for [ hl, points, ], idx in bezier_hl_points
     image
-      .stroke 'black', 1
+      .stroke 'black', 4
       .drawBezier points...
     ### draw HL horizontal ###
     if idx is 0
@@ -155,7 +166,7 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
   for collection in [ bezier_h_points, bezier_l_points, ]
     for [ hl, points, ], idx in collection
       image
-        .stroke 'black', 4
+        .stroke 'black', 1
         .drawBezier points...
   #.........................................................................................................
   image.write route, ( error ) ->

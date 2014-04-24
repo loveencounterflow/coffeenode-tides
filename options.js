@@ -22,6 +22,12 @@
   };
 
   data = {
+    tides: {
+      'min-l-height': null,
+      'max-l-height': null,
+      'min-h-height': null,
+      'max-h-height': null
+    },
     date: {
       timezone: 'Europe/Amsterdam',
       'raw-format': 'DD/MM/YYYY HH:mm'

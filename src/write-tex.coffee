@@ -33,12 +33,6 @@ preamble                  = read '../tex-inputs/preamble.tex'
 postscript                = read '../tex-inputs/postscript.tex'
 
 
-#===========================================================================================================
-# HELPERS
-#-----------------------------------------------------------------------------------------------------------
-@_as_integer = ( hint ) ->
-  return parseInt hint, 10
-
 
 #===========================================================================================================
 # TEX VOCABULARY
@@ -128,37 +122,37 @@ thinspace                 = '\u2009'
       echo postscript
       return
     #.......................................................................................................
-    row_idx += 1
-    moon_event  = tide_event[ 'moon' ]
-    date        = tide_event[ 'date' ]
-    this_day    = date.date()
-    this_month  = date.month()
+    row_idx      += 1
+    moon_event    = tide_event[ 'moon' ]
+    date          = tide_event[ 'date' ]
+    this_day      = date.date()
+    this_month    = date.month()
+    moon_quarter  = if moon_event? then moon_event[ 'quarter' ] else null
     #.......................................................................................................
     unless wrote_header
       this_month_tex = @format_month_name date
       echo TEX.rpr this_month_tex
       wrote_header = yes
     #.......................................................................................................
-    if ( moon_quarter = tide_event[ 'moon-quarter' ] )?
-      if moon_quarter is 0 or moon_quarter is 2
-        ### TAINT collect these in a 'newpage' function ###
-        row_idx   = 0
-        page_nr  += 1
-        #---------------------------------------------------------------------------------------------------
-        do ( page_nr, dots ) =>
-          #-------------------------------------------------------------------------------------------------
-          if page_nr < 3 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            ### TAINT asynchronous handling is missing ###
-            info "drawing image #{page_nr}"
-            route = njs_path.join '/tmp', "tides-p#{page_nr}.png"
-            # echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[height=178mm]{#{route}}}"""
-            echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[width=118mm]{#{route}}}"""
-            @draw_curves route, dots, ( error ) =>
-              info "image #{page_nr} ok"
-              throw error if error?
-        #---------------------------------------------------------------------------------------------------
-        dots      = []
-        echo """\\null\\newpage"""
+    if moon_quarter is 0 or moon_quarter is 2
+      ### TAINT collect these in a 'newpage' function ###
+      row_idx   = 0
+      page_nr  += 1
+      #---------------------------------------------------------------------------------------------------
+      do ( page_nr, dots ) =>
+        #-------------------------------------------------------------------------------------------------
+        if page_nr < 5 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          ### TAINT asynchronous handling is missing ###
+          info "drawing image #{page_nr}"
+          route = njs_path.join '/tmp', "tides-p#{page_nr}.png"
+          # echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[height=178mm]{#{route}}}"""
+          echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[width=118mm]{#{route}}}"""
+          @draw_curves route, dots, ( error ) =>
+            info "image #{page_nr} ok"
+            throw error if error?
+      #---------------------------------------------------------------------------------------------------
+      dots      = []
+      echo """\\null\\newpage"""
     #.......................................................................................................
     ### TAINT measurements should be defined in options ###
     textheight  = 178 # mm

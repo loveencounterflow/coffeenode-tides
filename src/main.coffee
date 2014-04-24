@@ -33,7 +33,6 @@ moment                    = require 'moment-timezone'
   'VM':       2
   'LK':       3
 
-
 #-----------------------------------------------------------------------------------------------------------
 @new_tide_event = ( source_line_nr, date, is_dst, hl, height ) ->
   R =
@@ -44,6 +43,17 @@ moment                    = require 'moment-timezone'
     'hl':               hl
     'height':           height
     'moon':             null
+  #.........................................................................................................
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
+@new_tidal_extrema_event = ( min_l_height, max_l_height, min_h_height, max_h_height ) ->
+  R =
+    '~isa':             'TIDES/tidal-extrema-event'
+    'min-l-height':      min_l_height
+    'max-l-height':      max_l_height
+    'min-h-height':      min_h_height
+    'max-h-height':      max_h_height
   #.........................................................................................................
   return R
 
@@ -78,12 +88,16 @@ moment                    = require 'moment-timezone'
   record_idx        = -1
   datetime_format   = @options[ 'data' ][ 'date' ][ 'raw-format' ]
   timezone          = @options[ 'data' ][ 'date' ][ 'timezone' ]
+  min_l_height      = +Infinity
+  max_l_height      = -Infinity
+  min_h_height      = +Infinity
+  max_h_height      = -Infinity
   #---------------------------------------------------------------------------------------------------------
   @walk_raw_fields route, ( error, fields, source_line, source_line_nr ) =>
     return handler error if error?
     #.......................................................................................................
     if fields is null
-      last_record_idx = null
+      handler null, @new_tidal_extrema_event min_l_height, max_l_height, min_h_height, max_h_height
       return handler null, null
     #.......................................................................................................
     columns     = []
@@ -116,8 +130,14 @@ moment                    = require 'moment-timezone'
     is_dst  = /\+$/.test tide_time_txt
     #.......................................................................................................
     switch tide
-      when 'LW' then hl = 'l'
-      when 'HW' then hl = 'h'
+      when 'LW'
+        hl = 'l'
+        min_l_height = Math.min min_l_height, height
+        max_l_height = Math.max max_l_height, height
+      when 'HW'
+        hl = 'h'
+        min_h_height = Math.min min_h_height, height
+        max_h_height = Math.max max_h_height, height
       else
         return handler new Error "unable to parse tide entry on line #{source_line_nr}: #{rpr tide}"
     #.......................................................................................................
@@ -131,6 +151,22 @@ moment                    = require 'moment-timezone'
     ### TAINT use @options ###
     moon_date.lang 'nl'
     handler null, @new_moon_event source_line_nr, moon_date, is_dst, moon_quarter
+  #---------------------------------------------------------------------------------------------------------
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@walk_events_extrema_first = ( route, handler ) ->
+  buffer                  = []
+  #---------------------------------------------------------------------------------------------------------
+  @walk_tide_and_moon_events route, ( error, event ) =>
+    return handler error if error?
+    #.......................................................................................................
+    if event is null
+      handler null, event for event in buffer
+      return handler null, null
+    #.......................................................................................................
+    return handler null, event if TYPES.isa event, 'TIDES/tidal-extrema-event'
+    buffer.push event
   #---------------------------------------------------------------------------------------------------------
   return null
 
@@ -163,7 +199,7 @@ moment                    = require 'moment-timezone'
       # whisper "clearing tide buffer"
       handler null, tide_buffer.shift()
   #---------------------------------------------------------------------------------------------------------
-  @walk_tide_and_moon_events route, ( error, event ) =>
+  @walk_events_extrema_first route, ( error, event ) =>
     return handler error if error?
     #.......................................................................................................
     ### Release remaining buffer contents and finish: ###
@@ -175,12 +211,19 @@ moment                    = require 'moment-timezone'
         return handler new Error "found #{moon_buffer.length} unprocessed moon events"
       return handler null, null
     #.......................................................................................................
-    type = event[ '~isa' ]
-    if type is 'TIDES/tide-event'
-      tide_buffer.push event
-    else
-      moon_buffer.push event
-      waiting_for_moon = yes
+    switch type = event[ '~isa' ]
+      when 'TIDES/tide-event'
+        tide_buffer.push event
+      when 'TIDES/moon-event'
+        moon_buffer.push event
+        waiting_for_moon = yes
+      when 'TIDES/tidal-extrema-event'
+        @options[ 'data' ][ 'tides' ][ 'min-l-height' ] = event[ 'min-l-height' ]
+        @options[ 'data' ][ 'tides' ][ 'max-l-height' ] = event[ 'max-l-height' ]
+        @options[ 'data' ][ 'tides' ][ 'min-h-height' ] = event[ 'min-h-height' ]
+        @options[ 'data' ][ 'tides' ][ 'max-h-height' ] = event[ 'max-h-height' ]
+      else
+        return handler new Error "unknown event type #{rpr type}"
     #.......................................................................................................
     if waiting_for_moon
       if ( tide_buffer.length >= tide_buffer_max_length )
