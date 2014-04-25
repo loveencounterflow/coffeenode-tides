@@ -33,7 +33,7 @@ options =
   ### TAINT this value from `write-tex#module` ###
   'line-height.mm':   2.871
   'line-height.px':   null
-  'x-offset.mm':      75
+  'x-offset.mm':      90
   'x-offset.px':      null
 
 #-----------------------------------------------------------------------------------------------------------
@@ -157,7 +157,7 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
     else
       x0 = points[ 0 ][ 0 ]
     ### TAINT these numbers also in `write-tex`; save in options ###
-    x1 = @_image_px_from_origin_mm ( if hl is 'h' then 40 else 75 ) + 1
+    x1 = @_image_px_from_origin_mm ( if hl is 'h' then 35 else 50 ) + 1
     y0 = y1 = points[ 0 ][ 1 ]
     image
       .stroke 'black', 1

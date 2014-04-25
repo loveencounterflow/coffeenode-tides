@@ -29,10 +29,12 @@ options =
     format:           'txt'
     from:             '01-01-2014'
     to:               '31-12-2014'
-    uitvoer:          '1'
+    # uitvoer:          '1' # tijdreeksen
+    uitvoer:          '2' # hoog- en laagwaters
     interval:         '10'
     lunarphase:       'yes'
-    location:         'YERSKE'
+    # location:         'YERSKE'
+    location:         'HARLGN'
     Timezone:         'MET_DST'
     refPlane:         'LAT'
     graphRefPlane:    'LAT'

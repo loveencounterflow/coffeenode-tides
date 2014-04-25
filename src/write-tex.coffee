@@ -103,6 +103,7 @@ thinspace                 = '\u2009'
 @main = ->
   ### TAINT must parametrize data source ###
   route         = njs_path.join __dirname, '../tidal-data/Yerseke.txt'
+  # route         = njs_path.join __dirname, '../tidal-data/Harlingen-2014-hl.txt'
   rows          = TEX.new_container []
   row_idx       = -1
   dots          = []
@@ -183,9 +184,9 @@ thinspace                 = '\u2009'
     #.......................................................................................................
     switch hl
       when 'h'
-        x_position = '40mm'
+        x_position = '35mm'
       when 'l'
-        x_position = '90mm'
+        x_position = '50mm'
       else
         throw new Error "expected `h` or `l` for hl indicator, got #{rpr hl}"
     #.......................................................................................................
