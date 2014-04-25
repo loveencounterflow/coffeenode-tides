@@ -69,6 +69,28 @@ moment                    = require 'moment-timezone'
   return R
 
 #-----------------------------------------------------------------------------------------------------------
+### TNG: unified 'lunar event' type ###
+@new_lunar_event = ( source, category, marker, date, details = null ) ->
+  switch category
+    when 'tide'
+      throw new Error "illegal marker #{rpr marker}" unless ( marker is 'h' ) or ( 'marker' is 'l' )
+    when 'distance'
+      throw new Error "illegal marker #{rpr marker}" unless ( marker is 'P' ) or ( 'marker' is 'A' )
+    when 'declination'
+      throw new Error "illegal marker #{rpr marker}" unless ( marker is 'N' ) or ( 'marker' is 'S' )
+    else
+      throw new Error "illegal category #{rpr category}"
+  R =
+    '~isa':             'TIDES/moon-event'
+    'category':         category
+    'marker':           marker
+    'source':           source
+    'date':             date
+    'details':          details
+  #.........................................................................................................
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
 @walk_raw_fields = ( route, handler ) ->
   #---------------------------------------------------------------------------------------------------------
   FS.lines_of route, ( error, source_line, source_line_nr ) =>
@@ -82,6 +104,12 @@ moment                    = require 'moment-timezone'
     handler null, fields, source_line, source_line_nr
   #---------------------------------------------------------------------------------------------------------
   return null
+
+#-----------------------------------------------------------------------------------------------------------
+@walk_lunar_distance_events = ( route, handler ) ->
+
+#-----------------------------------------------------------------------------------------------------------
+@walk_lunar_declination_events = ( route, handler ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 @walk_tide_and_moon_events = ( route, handler ) ->
