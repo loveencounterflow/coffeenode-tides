@@ -73,11 +73,11 @@ moment                    = require 'moment-timezone'
 @new_lunar_event = ( source, category, marker, date, details = null ) ->
   switch category
     when 'tide'
-      throw new Error "illegal marker #{rpr marker}" unless ( marker is 'h' ) or ( 'marker' is 'l' )
+      throw new Error "illegal marker #{rpr marker}" unless ( marker is 'h' ) or ( marker is 'l' )
     when 'distance'
-      throw new Error "illegal marker #{rpr marker}" unless ( marker is 'P' ) or ( 'marker' is 'A' )
+      throw new Error "illegal marker #{rpr marker}" unless ( marker is 'P' ) or ( marker is 'A' )
     when 'declination'
-      throw new Error "illegal marker #{rpr marker}" unless ( marker is 'N' ) or ( 'marker' is 'S' )
+      throw new Error "illegal marker #{rpr marker}" unless ( marker is 'N' ) or ( marker is 'S' )
     else
       throw new Error "illegal category #{rpr category}"
   R =
@@ -99,6 +99,7 @@ moment                    = require 'moment-timezone'
     #.......................................................................................................
     source_line = source_line.trim()
     return if source_line[ 0 ] is '#'
+    return if source_line.length is 0
     #.......................................................................................................
     fields  = source_line.split /\s+/
     handler null, fields, source_line, source_line_nr
@@ -107,9 +108,57 @@ moment                    = require 'moment-timezone'
 
 #-----------------------------------------------------------------------------------------------------------
 @walk_lunar_distance_events = ( route, handler ) ->
+  #---------------------------------------------------------------------------------------------------------
+  @walk_raw_fields route, ( error, fields, source_line, source_line_nr ) =>
+    return handler error if error?
+    #.......................................................................................................
+    if fields is null
+      return handler null, null
+    #.......................................................................................................
+    columns     = []
+    #.......................................................................................................
+    unless ( field_count = fields.length ) is 5
+      throw new Error "expected 5 fields, got #{field_count} on line ##{source_line_nr} in file #{route}"
+    #.......................................................................................................
+    [ date_txt
+      time_txt
+      tz
+      distance_km_txt
+      marker ] = fields
+    #.......................................................................................................
+    source      = "#{route}##{source_line_nr}"
+    date        = moment.tz "#{date_txt} #{time_txt}", tz
+    distance_km = parseInt distance_km_txt, 10
+    ### TAINT make configurable ###
+    marker      = if marker is 'Apogee' then 'A' else 'P'
+    details     = 'distance.km': distance_km
+    handler null, @new_lunar_event source, 'distance', marker, date, details
 
 #-----------------------------------------------------------------------------------------------------------
 @walk_lunar_declination_events = ( route, handler ) ->
+  #---------------------------------------------------------------------------------------------------------
+  @walk_raw_fields route, ( error, fields, source_line, source_line_nr ) =>
+    return handler error if error?
+    #.......................................................................................................
+    if fields is null
+      return handler null, null
+    #.......................................................................................................
+    columns     = []
+    #.......................................................................................................
+    unless ( field_count = fields.length ) is 4
+      throw new Error "expected 4 fields, got #{field_count} on line ##{source_line_nr} in file #{route}"
+    #.......................................................................................................
+    [ date_txt
+      time_txt
+      tz
+      declination_txt ] = fields
+    #.......................................................................................................
+    source          = "#{route}##{source_line_nr}"
+    date            = moment.tz "#{date_txt} #{time_txt}", tz
+    marker          = declination_txt[ 0 ]
+    declination_deg = parseFloat declination_txt[ 1 ... ], 10
+    details         = 'declination.deg': declination_deg
+    handler null, @new_lunar_event source, 'declination', marker, date, details
 
 #-----------------------------------------------------------------------------------------------------------
 @walk_tide_and_moon_events = ( route, handler ) ->
@@ -328,5 +377,18 @@ moment                    = require 'moment-timezone'
 ############################################################################################################
 unless module.parent?
   # @_demo_walk_tide_and_moon_events()
-  @_demo_walk()
+  # @_demo_walk()
+  ### TAINT make configurable ###
+  route = njs_path.join __dirname, '../tidal-data/apogees-and-perigees.txt'
+  @walk_lunar_distance_events route, ( error, event ) ->
+    throw error if error?
+    return if event is null
+    debug event[ 'category' ], event[ 'marker' ], event[ 'date' ].toString(), event[ 'details' ]
+  ### TAINT make configurable ###
+  route = njs_path.join __dirname, '../tidal-data/declination-maxima.txt'
+  @walk_lunar_declination_events route, ( error, event ) ->
+    throw error if error?
+    return if event is null
+    debug event[ 'category' ], event[ 'marker' ], event[ 'date' ].toString(), event[ 'details' ]
+
 
