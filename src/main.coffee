@@ -21,6 +21,7 @@ debug                     = TRM.get_logger 'debug',     badge
 warn                      = TRM.get_logger 'warn',      badge
 help                      = TRM.get_logger 'help',      badge
 echo                      = TRM.echo.bind TRM
+bSearch                   = require 'coffeenode-bsearch'
 @options                  = require '../options'
 #...........................................................................................................
 eventually                = process.nextTick
@@ -107,15 +108,15 @@ moment                    = require 'moment-timezone'
   return null
 
 #-----------------------------------------------------------------------------------------------------------
-@walk_lunar_distance_events = ( route, handler ) ->
+@walk_lunar_distance_events = ( handler ) ->
+  ### TAINT make configurable ###
+  route = njs_path.join __dirname, '../tidal-data/apogees-and-perigees.txt'
   #---------------------------------------------------------------------------------------------------------
   @walk_raw_fields route, ( error, fields, source_line, source_line_nr ) =>
     return handler error if error?
     #.......................................................................................................
     if fields is null
       return handler null, null
-    #.......................................................................................................
-    columns     = []
     #.......................................................................................................
     unless ( field_count = fields.length ) is 5
       throw new Error "expected 5 fields, got #{field_count} on line ##{source_line_nr} in file #{route}"
@@ -135,15 +136,15 @@ moment                    = require 'moment-timezone'
     handler null, @new_lunar_event source, 'distance', marker, date, details
 
 #-----------------------------------------------------------------------------------------------------------
-@walk_lunar_declination_events = ( route, handler ) ->
+@walk_lunar_declination_events = ( handler ) ->
+  ### TAINT make configurable ###
+  route = njs_path.join __dirname, '../tidal-data/declination-maxima.txt'
   #---------------------------------------------------------------------------------------------------------
   @walk_raw_fields route, ( error, fields, source_line, source_line_nr ) =>
     return handler error if error?
     #.......................................................................................................
     if fields is null
       return handler null, null
-    #.......................................................................................................
-    columns     = []
     #.......................................................................................................
     unless ( field_count = fields.length ) is 4
       throw new Error "expected 4 fields, got #{field_count} on line ##{source_line_nr} in file #{route}"
@@ -322,17 +323,66 @@ moment                    = require 'moment-timezone'
   TIDES.walk_tide_and_moon_events route, ( error, event ) =>
     throw error if error?
     return if event is null
-    date = event[ 'date' ]
-    date_txt  = date.format 'dddd, D. MMMM YYYY HH:mm'
-    if TYPES.isa event, 'TIDES/moon-event'
-      quarter = event[ 'quarter' ]
-      symbol  = TIDES.options[ 'data' ][ 'moon' ][ 'unicode' ][ quarter ]
-      log TRM.lime date_txt, quarter, symbol
-    else
-      hl      = event[ 'hl' ]
-      height  = event[ 'height' ]
-      log TRM.gold date_txt, hl, height
+    date      = event[ 'date' ]
+    date_txt  = if date? then date.format 'dddd, D. MMMM YYYY HH:mm' else './.'
+    switch type = TYPES.type_of event
+      when 'TIDES/moon-event'
+        quarter = event[ 'quarter' ]
+        symbol  = TIDES.options[ 'data' ][ 'moon' ][ 'unicode' ][ quarter ]
+        log TRM.lime date_txt, quarter, symbol
+      when 'TIDES/tide-event'
+        hl      = event[ 'hl' ]
+        height  = event[ 'height' ]
+        log TRM.gold date_txt, hl, height
+      when 'TIDES/tidal-extrema-event'
+        log TRM.gold event
+      else
+        warn "unhandled event of type #{rpr type}"
   #---------------------------------------------------------------------------------------------------------
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@_demo_align_tide_and_moon_events = ->
+  TIDES         = @
+  # route         = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
+  route         = njs_path.join __dirname, '../tidal-data/Yerseke.txt'
+  tidal_events  = []
+  lunar_events  = []
+  #---------------------------------------------------------------------------------------------------------
+  get_compare = ( probe_event ) =>
+    return ( data_event ) =>
+      return probe_event[ 'date' ] - data_event[ 'date' ]
+  #---------------------------------------------------------------------------------------------------------
+  collect = ( handler ) =>
+    #-------------------------------------------------------------------------------------------------------
+    TIDES.walk_tide_and_moon_events route, ( error, event ) =>
+      return handler error if error?
+      return handler null if event is null
+      switch type = TYPES.type_of event
+        when 'TIDES/moon-event'
+          lunar_events.push event
+        when 'TIDES/tide-event'
+          tidal_events.push event
+        else
+          warn "unhandled event of type #{rpr type}"
+  #---------------------------------------------------------------------------------------------------------
+  splice = => # ( handler ) =>
+    collect ( error ) =>
+      throw error if error?
+      for collection in [ lunar_events, ]
+        for lunar_event in lunar_events
+          lunar_date        = lunar_event[ 'date' ]
+          lunar_date_txt    = lunar_date.format 'YY-MM-DD HH:mm Z', 'Europe/Amsterdam'
+          # lunar_event_txt   = "#{lunar_date_txt} #{lunar_event[ 'category' ]} #{lunar_event[ 'marker' ]}"
+          lunar_event_txt   = "#{lunar_date_txt} #{lunar_event[ 'quarter' ]}"
+          idx               = bSearch.closest tidal_events, get_compare lunar_event
+          tidal_event       = tidal_events[ idx ]
+          tidal_date        = tidal_event[ 'date' ]
+          tidal_date_txt    = tidal_date.format 'YY-MM-DD HH:mm Z', 'Europe/Amsterdam'
+          tidal_event_txt   = "#{tidal_date_txt} #{tidal_event[ 'hl' ]}"
+          log ( TRM.lime tidal_event_txt ), ( TRM.gold lunar_event_txt )
+  #.........................................................................................................
+  splice()
   return null
 
 #-----------------------------------------------------------------------------------------------------------
@@ -373,22 +423,21 @@ moment                    = require 'moment-timezone'
   #---------------------------------------------------------------------------------------------------------
   return null
 
+#-----------------------------------------------------------------------------------------------------------
+@_demo_walk_lunar_events = ->
+  @walk_lunar_distance_events ( error, event ) ->
+    throw error if error?
+    return if event is null
+    debug event[ 'category' ], event[ 'marker' ], event[ 'date' ].toString(), event[ 'details' ]
+  @walk_lunar_declination_events ( error, event ) ->
+    throw error if error?
+    return if event is null
+    debug event[ 'category' ], event[ 'marker' ], event[ 'date' ].toString(), event[ 'details' ]
 
 ############################################################################################################
 unless module.parent?
   # @_demo_walk_tide_and_moon_events()
   # @_demo_walk()
-  ### TAINT make configurable ###
-  route = njs_path.join __dirname, '../tidal-data/apogees-and-perigees.txt'
-  @walk_lunar_distance_events route, ( error, event ) ->
-    throw error if error?
-    return if event is null
-    debug event[ 'category' ], event[ 'marker' ], event[ 'date' ].toString(), event[ 'details' ]
-  ### TAINT make configurable ###
-  route = njs_path.join __dirname, '../tidal-data/declination-maxima.txt'
-  @walk_lunar_declination_events route, ( error, event ) ->
-    throw error if error?
-    return if event is null
-    debug event[ 'category' ], event[ 'marker' ], event[ 'date' ].toString(), event[ 'details' ]
-
+  # @_demo_walk_lunar_events()
+  @_demo_align_tide_and_moon_events()
 
