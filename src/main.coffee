@@ -439,5 +439,40 @@ unless module.parent?
   # @_demo_walk_tide_and_moon_events()
   # @_demo_walk()
   # @_demo_walk_lunar_events()
-  @_demo_align_tide_and_moon_events()
+  # @_demo_align_tide_and_moon_events()
+
+  info moment() - moment '2012-01-01'
+  info
+  #.format()
+
+  new Date '2014-12-28T19:31'
+  new Date '2014-12-27T00:51'
+  new Date '2014-12-27T07:12'
+  new Date '2014-12-27T13:20'
+  new Date '2014-12-27T19:46'
+  new Date '2014-12-28T01:45'
+  new Date '2014-12-28T08:06'
+  new Date '2014-12-28T14:16'
+  new Date '2014-12-28T20:40'
+  new Date '2014-12-29T02:41'
+  new Date '2014-12-29T08:58'
+  new Date '2014-12-29T15:10'
+  new Date '2014-12-29T21:38'
+  new Date '2014-12-30T03:35'
+  new Date '2014-12-30T10:02'
+  new Date '2014-12-30T16:09'
+  new Date '2014-12-30T22:45'
+
+# dates = []
+# for m in [ 55 .. 59 ]
+#   dates.push "2014-10-26T00:#{m}"
+# for m in [ 0 .. 4 ]
+#   dates.push "2014-10-26T01:0#{m}"
+
+dates = [
+  new Date '2014-10-26T00:59'
+  new Date '2014-10-26T01:00' ]
+
+console.log dates
+console.log dates.sort()
 
