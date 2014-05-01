@@ -83,7 +83,7 @@ TRM.depth_of_inspect      = 2
   TIDES.read_aligned_events route, ( error, event_batches ) =>
     throw error if error?
     #.......................................................................................................
-    [ tidal_extrema_event_batch
+    [ extrema_event_batch
       tidal_hl_event_batch      ] = event_batches
     #.......................................................................................................
     for primary_event in tidal_hl_event_batch
@@ -105,14 +105,15 @@ TRM.depth_of_inspect      = 2
         distance_km     = secondary_event[ 'details' ][ 'distance.km' ]
         distance_ed     = distance_km / 12742
         # log TRM.blue date_txt, ap, "#{distance_km}km"
-        log TRM.blue date_txt, ap, "#{distance_ed}ed"
+        log TRM.blue date_txt, ap, "#{distance_ed.toFixed 1}ed"
       #.....................................................................................................
       if ( secondary_event = secondary_events[ 'declination' ] )?
         date_txt        = secondary_event[ 'date' ].format 'dd DD.MM.YYYY HH:mm'
         sn              = secondary_event[ 'marker' ]
         declination_deg = secondary_event[ 'details' ][ 'declination.deg' ]
-        log TRM.red date_txt, sn, "#{declination_deg}°"
-
+        log TRM.red date_txt, sn, "#{declination_deg.toFixed 1}°"
+    #.......................................................................................................
+    whisper extrema_event_batch
 
 # #-----------------------------------------------------------------------------------------------------------
 # @_demo_align_tide_and_moon_events = ->

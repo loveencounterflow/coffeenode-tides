@@ -56,6 +56,24 @@ ASYNC                     = require 'async'
   return R
 
 #-----------------------------------------------------------------------------------------------------------
+@new_lunar_declination_extremum_event = ( min_declination_deg, max_declination_deg ) ->
+  R =
+    '~isa':                 'TIDES/lunar-declination-extremum-event'
+    'min-declination.deg':  min_declination_deg
+    'max-declination.deg':  max_declination_deg
+  #.........................................................................................................
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
+@new_lunar_distance_extremum_event = ( min_distance_km, max_distance_km ) ->
+  R =
+    '~isa':                 'TIDES/lunar-distance-extremum-event'
+    'min-distance.km':      min_distance_km
+    'max-distance.km':      max_distance_km
+  #.........................................................................................................
+  return R
+
+#-----------------------------------------------------------------------------------------------------------
 ### TNG: unified 'lunar event' type ###
 @new_lunar_event = ( source_ref, category, marker, date, details = null ) ->
   switch category
@@ -108,11 +126,14 @@ ASYNC                     = require 'async'
 @walk_lunar_distance_events = ( handler ) ->
   ### TAINT make configurable ###
   route = njs_path.join __dirname, '../tidal-data/apogees-and-perigees.txt'
+  min_distance_km     = +Infinity
+  max_distance_km     = -Infinity
   #---------------------------------------------------------------------------------------------------------
   @walk_raw_fields route, ( error, fields, source_line, source_ref ) =>
     return handler error if error?
     #.......................................................................................................
     if fields is null
+      handler null, @new_lunar_distance_extremum_event min_distance_km, max_distance_km
       return handler null, null
     #.......................................................................................................
     unless ( field_count = fields.length ) is 5
@@ -124,22 +145,27 @@ ASYNC                     = require 'async'
       distance_km_txt
       marker ] = fields
     #.......................................................................................................
-    date        = moment.tz "#{date_txt} #{time_txt}", tz
-    distance_km = parseInt distance_km_txt, 10
+    date            = moment.tz "#{date_txt} #{time_txt}", tz
+    distance_km     = parseInt distance_km_txt, 10
     ### TAINT make configurable ###
-    marker      = if marker is 'Apogee' then 'A' else 'P'
-    details     = 'distance.km': distance_km
+    marker          = if marker is 'Apogee' then 'A' else 'P'
+    details         = 'distance.km': distance_km
+    min_distance_km = Math.min min_distance_km, distance_km
+    max_distance_km = Math.max max_distance_km, distance_km
     handler null, @new_lunar_event source_ref, 'distance', marker, date, details
 
 #-----------------------------------------------------------------------------------------------------------
 @walk_lunar_declination_events = ( handler ) ->
   ### TAINT make configurable ###
   route = njs_path.join __dirname, '../tidal-data/declination-maxima.txt'
+  min_declination_deg = +Infinity
+  max_declination_deg = -Infinity
   #---------------------------------------------------------------------------------------------------------
   @walk_raw_fields route, ( error, fields, source_line, source_ref ) =>
     return handler error if error?
     #.......................................................................................................
     if fields is null
+      handler null, @new_lunar_declination_extremum_event min_declination_deg, max_declination_deg
       return handler null, null
     #.......................................................................................................
     unless ( field_count = fields.length ) is 4
@@ -150,10 +176,12 @@ ASYNC                     = require 'async'
       tz
       declination_txt ] = fields
     #.......................................................................................................
-    date            = moment.tz "#{date_txt} #{time_txt}", tz
-    marker          = declination_txt[ 0 ]
-    declination_deg = parseFloat declination_txt[ 1 ... ], 10
-    details         = 'declination.deg': declination_deg
+    date                = moment.tz "#{date_txt} #{time_txt}", tz
+    marker              = declination_txt[ 0 ]
+    declination_deg     = parseFloat declination_txt[ 1 ... ], 10
+    min_declination_deg = Math.min min_declination_deg, declination_deg
+    max_declination_deg = Math.max max_declination_deg, declination_deg
+    details             = 'declination.deg': declination_deg
     #.......................................................................................................
     handler null, @new_lunar_event source_ref, 'declination', marker, date, details
   #---------------------------------------------------------------------------------------------------------
@@ -245,7 +273,10 @@ ASYNC                     = require 'async'
   should *not* appear in ascending order, expect weird results when trying to align events using binary
   search; **(2)** lunar events are sorted only **within**, not **across** event categories, so it may happen
   that a lunar declination event for July comes earlier than, say, a lunar phase event for January. ###
-  tidal_extrema_event_batch = []
+  extrema_event_batch       =
+    'tidal':                  null
+    'declination':            null
+    'distance':               null
   tidal_hl_event_batch      = []
   lunar_event_batch         = []
   tasks                     = []
@@ -258,7 +289,7 @@ ASYNC                     = require 'async'
       #.....................................................................................................
       switch types = TYPES.type_of event
         when 'TIDES/tidal-extrema-event'
-          tidal_extrema_event_batch.push event
+          extrema_event_batch[ 'tidal' ] = event
         when 'TIDES/tidal-event'
           tidal_hl_event_batch.push event
         when 'TIDES/lunar-event'
@@ -273,6 +304,9 @@ ASYNC                     = require 'async'
       return handler error if error?
       return done null if event is null
       #.....................................................................................................
+      if TYPES.type_of event is 'TIDES/lunar-distance-extremum-event'
+        return extrema_event_batch[ 'distance' ] = event
+      #.....................................................................................................
       lunar_event_batch.push event
   #---------------------------------------------------------------------------------------------------------
   tasks.push ( done ) =>
@@ -282,12 +316,15 @@ ASYNC                     = require 'async'
       return handler error if error?
       return done null if event is null
       #.....................................................................................................
+      if TYPES.type_of event is 'TIDES/lunar-declination-extremum-event'
+        return extrema_event_batch[ 'declination' ] = event
+      #.....................................................................................................
       lunar_event_batch.push event
   #---------------------------------------------------------------------------------------------------------
   ASYNC.parallel tasks, ( error ) =>
     return handler error if error?
     handler null, [
-      tidal_extrema_event_batch
+      extrema_event_batch
       tidal_hl_event_batch
       lunar_event_batch         ]
   #---------------------------------------------------------------------------------------------------------
@@ -315,14 +352,14 @@ ASYNC                     = require 'async'
   @read_tidal_and_lunar_event_batches route, ( error, event_batches ) =>
     throw error if error?
     #.......................................................................................................
-    [ tidal_extrema_event_batch
+    [ extrema_event_batch
       tidal_hl_event_batch
       lunar_event_batch         ] = event_batches
     #.......................................................................................................
     for lunar_event in lunar_event_batch
       @_align_lunar_with_tidal_event tidal_hl_event_batch, lunar_event
     #.......................................................................................................
-    return handler null, [ tidal_extrema_event_batch, tidal_hl_event_batch, ]
+    return handler null, [ extrema_event_batch, tidal_hl_event_batch, ]
   #---------------------------------------------------------------------------------------------------------
   return null
 
