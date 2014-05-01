@@ -231,13 +231,24 @@ ASYNC                     = require 'async'
   return null
 
 #-----------------------------------------------------------------------------------------------------------
-@walk_tidal_and_lunar_phase_events = ( route, handler ) ->
-  ### Same as `_walk_tidal_and_lunar_phase_events`, but delivers the tidal extrema first, so consumers know
-  beforehand about tidal extrema to be expected. ###
-  tidal_extrema_event   = null
-  tidal_hl_event_buffer = []
-  lunar_event_buffer    = []
-  tasks                 = []
+@read_tidal_and_lunar_event_batches = ( route, handler ) ->
+  ### As the name says, the method will read tidal and lunar events and return a list with three batches
+  (i.e. lists) of events.
+
+  The batches list will be ordered as follows:
+  * first comes a list with a single `TIDES/tidal-extrema-event`, announcing the lows and highs for the
+    place and time under consideration;
+  * next come all the tidal lows and heights;
+  * finally, the lunar events—phases as well as declination and distance extrema—are sent.
+
+  Note that **(1)** each event category is sorted **as they appear in the datasources**, so in case they
+  should *not* appear in ascending order, expect weird results when trying to align events using binary
+  search; **(2)** lunar events are sorted only **within**, not **across** event categories, so it may happen
+  that a lunar declination event for July comes earlier than, say, a lunar phase event for January. ###
+  tidal_extrema_event_batch = []
+  tidal_hl_event_batch      = []
+  lunar_event_batch         = []
+  tasks                     = []
   #---------------------------------------------------------------------------------------------------------
   tasks.push ( done ) =>
     #-------------------------------------------------------------------------------------------------------
@@ -247,11 +258,11 @@ ASYNC                     = require 'async'
       #.....................................................................................................
       switch types = TYPES.type_of event
         when 'TIDES/tidal-extrema-event'
-          tidal_extrema_event = event
+          tidal_extrema_event_batch.push event
         when 'TIDES/tidal-event'
-          tidal_hl_event_buffer.push event
+          tidal_hl_event_batch.push event
         when 'TIDES/lunar-event'
-          lunar_event_buffer.push event
+          lunar_event_batch.push event
         else
           warn "skipped event of type #{rpr type}"
   #---------------------------------------------------------------------------------------------------------
@@ -262,7 +273,7 @@ ASYNC                     = require 'async'
       return handler error if error?
       return done null if event is null
       #.....................................................................................................
-      lunar_event_buffer.push event
+      lunar_event_batch.push event
   #---------------------------------------------------------------------------------------------------------
   tasks.push ( done ) =>
     #-------------------------------------------------------------------------------------------------------
@@ -271,88 +282,56 @@ ASYNC                     = require 'async'
       return handler error if error?
       return done null if event is null
       #.....................................................................................................
-      lunar_event_buffer.push event
+      lunar_event_batch.push event
   #---------------------------------------------------------------------------------------------------------
   ASYNC.parallel tasks, ( error ) =>
     return handler error if error?
-    handler null, tidal_extrema_event
-    handler null, event for event in tidal_hl_event_buffer
-    handler null, event for event in lunar_event_buffer
-    return handler null, null
+    handler null, [
+      tidal_extrema_event_batch
+      tidal_hl_event_batch
+      lunar_event_batch         ]
+  #---------------------------------------------------------------------------------------------------------
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@_align_lunar_with_tidal_event = ( tidal_events, lunar_event ) ->
+  #---------------------------------------------------------------------------------------------------------
+  get_compare = ( probe_event ) =>
+    return ( data_event ) =>
+      return probe_event[ 'date' ] - data_event[ 'date' ]
+  #---------------------------------------------------------------------------------------------------------
+  category          = lunar_event[ 'category' ]
+  lunar_date        = lunar_event[ 'date' ]
+  idx               = bSearch.closest tidal_events, get_compare lunar_event
+  throw new Error "should never happen: uanble to align events" unless idx?
+  tidal_event       = tidal_events[ idx ]
+  #.........................................................................................................
+  tidal_event[ 'lunar-events' ][ category ] = lunar_event
+  return tidal_event
+
+#-----------------------------------------------------------------------------------------------------------
+@read_aligned_events = ( route, handler ) ->
+  #---------------------------------------------------------------------------------------------------------
+  @read_tidal_and_lunar_event_batches route, ( error, event_batches ) =>
+    throw error if error?
+    #.......................................................................................................
+    [ tidal_extrema_event_batch
+      tidal_hl_event_batch
+      lunar_event_batch         ] = event_batches
+    #.......................................................................................................
+    for lunar_event in lunar_event_batch
+      @_align_lunar_with_tidal_event tidal_hl_event_batch, lunar_event
+    #.......................................................................................................
+    return handler null, [ tidal_extrema_event_batch, tidal_hl_event_batch, ]
   #---------------------------------------------------------------------------------------------------------
   return null
 
 
-# #-----------------------------------------------------------------------------------------------------------
-# @walk = ( route, handler ) ->
-#   tide_buffer             = []
-#   tide_buffer_max_length  = 6
-#   moon_buffer             = []
-#   waiting_for_moon        = no
-#   #---------------------------------------------------------------------------------------------------------
-#   find_closest_tide_for_moon_event = =>
-#     return if moon_buffer.length is 0
-#     if moon_buffer.length > 1
-#       return handler new Error "too many moon events in buffer (#{moon_buffer.length})"
-#     moon_event  = moon_buffer.shift()
-#     moon_date   = moon_event[ 'date' ]
-#     #.....................................................................................................
-#     dt_min = Infinity
-#     for tide_event in tide_buffer
-#       tide_date     = tide_event[ 'date' ]
-#       dt            = Math.abs ( moment.duration tide_date.diff moon_date ).asHours()
-#       continue if dt > dt_min
-#       dt_min        = dt
-#       target_event  = tide_event
-#     #.....................................................................................................
-#     target_event[ 'moon' ] = moon_event
-#   #---------------------------------------------------------------------------------------------------------
-#   clear_tide_buffer = ( max_length ) =>
-#     while tide_buffer.length > max_length
-#       # whisper "clearing tide buffer"
-#       handler null, tide_buffer.shift()
-#   #---------------------------------------------------------------------------------------------------------
-#   @walk_events_extrema_first route, ( error, event ) =>
-#     return handler error if error?
-#     #.......................................................................................................
-#     ### Release remaining buffer contents and finish: ###
-#     ### TAINT must look for remaining moon entries in buffer ###
-#     if event is null
-#       find_closest_tide_for_moon_event()
-#       clear_tide_buffer 0
-#       if moon_buffer.length isnt 0
-#         return handler new Error "found #{moon_buffer.length} unprocessed moon events"
-#       return handler null, null
-#     #.......................................................................................................
-#     switch type = event[ '~isa' ]
-#       when 'TIDES/tidal-event'
-#         tide_buffer.push event
-#       when 'TIDES/lunar-event'
-#         moon_buffer.push event
-#         waiting_for_moon = yes
-#       when 'TIDES/tidal-extrema-event'
-#         @options[ 'data' ][ 'tides' ][ 'min-l-height' ] = event[ 'min-l-height' ]
-#         @options[ 'data' ][ 'tides' ][ 'max-l-height' ] = event[ 'max-l-height' ]
-#         @options[ 'data' ][ 'tides' ][ 'min-h-height' ] = event[ 'min-h-height' ]
-#         @options[ 'data' ][ 'tides' ][ 'max-h-height' ] = event[ 'max-h-height' ]
-#       else
-#         return handler new Error "unknown event type #{rpr type}"
-#     #.......................................................................................................
-#     if waiting_for_moon
-#       if ( tide_buffer.length >= tide_buffer_max_length )
-#         find_closest_tide_for_moon_event()
-#         waiting_for_moon = no
-#         clear_tide_buffer 0
-#     #.......................................................................................................
-#     else
-#       clear_tide_buffer 2
 
-
-
-############################################################################################################
-unless module.parent?
-  # @_demo_walk_tide_and_moon_events()
-  # @_demo_walk()
-  # @_demo_walk_lunar_events()
-  @_demo_align_tide_and_moon_events()
+# ############################################################################################################
+# unless module.parent?
+#   # @_demo_walk_tide_and_moon_events()
+#   # @_demo_walk()
+#   # @_demo_walk_lunar_events()
+#   @_demo_align_tide_and_moon_events()
 

@@ -32,138 +32,177 @@ TRM.depth_of_inspect      = 2
 #===========================================================================================================
 # DEMOS
 #-----------------------------------------------------------------------------------------------------------
-@_demo_walk_tidal_and_lunar_phase_events = ->
+@walk_tidal_and_lunar_phase_event_batches = ->
   route = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
   #---------------------------------------------------------------------------------------------------------
-  TIDES.walk_tidal_and_lunar_phase_events route, ( error, event ) =>
+  TIDES.read_tidal_and_lunar_event_batches route, ( error, event_batches ) =>
     throw error if error?
-    return if event is null
-    date      = event[ 'date' ]
-    date_txt  = if date? then date.format 'dddd, D. MMMM YYYY HH:mm' else './.'
     #.......................................................................................................
-    switch type = TYPES.type_of event
+    for event_batch in event_batches
       #.....................................................................................................
-      when 'TIDES/lunar-event'
-        switch category = event[ 'category' ]
-          when 'phase'
-            quarter         = event[ 'marker' ]
-            symbol          = TIDES.options[ 'data' ][ 'moon' ][ 'unicode' ][ quarter ]
-            log TRM.lime date_txt, quarter, symbol
-          when 'distance'
-            ap              = event[ 'marker' ]
-            distance_km     = event[ 'details' ][ 'distance.km' ]
-            log TRM.blue date_txt, ap, "#{distance_km}km"
-          when 'declination'
-            sn              = event[ 'marker' ]
-            declination_deg = event[ 'details' ][ 'declination.deg' ]
-            log TRM.orange date_txt, sn, "#{declination_deg}°"
+      for event in event_batch
+        date      = event[ 'date' ]
+        date_txt  = if date? then date.format 'dddd, D. MMMM YYYY HH:mm' else './.'
+        #...................................................................................................
+        switch type = TYPES.type_of event
+          #.................................................................................................
+          when 'TIDES/lunar-event'
+            switch category = event[ 'category' ]
+              when 'phase'
+                quarter         = event[ 'marker' ]
+                symbol          = TIDES.options[ 'data' ][ 'moon' ][ 'unicode' ][ quarter ]
+                log TRM.lime date_txt, quarter, symbol
+              when 'distance'
+                ap              = event[ 'marker' ]
+                distance_km     = event[ 'details' ][ 'distance.km' ]
+                log TRM.blue date_txt, ap, "#{distance_km}km"
+              when 'declination'
+                sn              = event[ 'marker' ]
+                declination_deg = event[ 'details' ][ 'declination.deg' ]
+                log TRM.orange date_txt, sn, "#{declination_deg}°"
+              else
+                warn "skipped event with category #{rpr category}"
+          #.................................................................................................
+          when 'TIDES/tidal-event'
+            hl      = event[ 'hl' ]
+            height  = event[ 'height' ]
+            log TRM.gold date_txt, hl, height
+          #.................................................................................................
+          when 'TIDES/tidal-extrema-event'
+            log TRM.cyan event
+          #.................................................................................................
           else
-            warn "skipped event with category #{rpr category}"
-      #.....................................................................................................
-      when 'TIDES/tidal-event'
-        hl      = event[ 'hl' ]
-        height  = event[ 'height' ]
-        log TRM.gold date_txt, hl, height
-      #.....................................................................................................
-      when 'TIDES/tidal-extrema-event'
-        log TRM.cyan event
-      #.....................................................................................................
-      else
-        warn "unhandled event of type #{rpr type}"
+            warn "unhandled event of type #{rpr type}"
   #---------------------------------------------------------------------------------------------------------
   return null
 
 #-----------------------------------------------------------------------------------------------------------
-@_demo_align_tide_and_moon_events = ->
-  # route         = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
-  route         = njs_path.join __dirname, '../tidal-data/Yerseke.txt'
-  tidal_events  = []
-  lunar_events  = []
+@read_aligned_events = ->
+  route = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
   #---------------------------------------------------------------------------------------------------------
-  get_compare = ( probe_event ) =>
-    return ( data_event ) =>
-      return probe_event[ 'date' ] - data_event[ 'date' ]
-  #---------------------------------------------------------------------------------------------------------
-  collect = ( handler ) =>
-    #-------------------------------------------------------------------------------------------------------
-    TIDES.walk_tide_and_moon_events route, ( error, event ) =>
-      return handler error if error?
-      return handler null if event is null
-      switch type = TYPES.type_of event
-        when 'TIDES/lunar-event'
-          lunar_events.push event
-        when 'TIDES/tidal-event'
-          tidal_events.push event
-        else
-          warn "unhandled event of type #{rpr type}"
-  #---------------------------------------------------------------------------------------------------------
-  splice = => # ( handler ) =>
-    collect ( error ) =>
-      throw error if error?
-      for collection in [ lunar_events, ]
-        for lunar_event in lunar_events
-          lunar_date        = lunar_event[ 'date' ]
-          lunar_date_txt    = lunar_date.format 'YY-MM-DD HH:mm Z', 'Europe/Amsterdam'
-          # lunar_event_txt   = "#{lunar_date_txt} #{lunar_event[ 'category' ]} #{lunar_event[ 'marker' ]}"
-          lunar_event_txt   = "#{lunar_date_txt} #{lunar_event[ 'quarter' ]}"
-          idx               = bSearch.closest tidal_events, get_compare lunar_event
-          tidal_event       = tidal_events[ idx ]
-          tidal_date        = tidal_event[ 'date' ]
-          tidal_date_txt    = tidal_date.format 'YY-MM-DD HH:mm Z', 'Europe/Amsterdam'
-          tidal_event_txt   = "#{tidal_date_txt} #{tidal_event[ 'hl' ]}"
-          log ( TRM.lime tidal_event_txt ), ( TRM.gold lunar_event_txt )
-  #.........................................................................................................
-  splice()
-  return null
+  TIDES.read_aligned_events route, ( error, event_batches ) =>
+    throw error if error?
+    #.......................................................................................................
+    [ tidal_extrema_event_batch
+      tidal_hl_event_batch      ] = event_batches
+    #.......................................................................................................
+    for primary_event in tidal_hl_event_batch
+      date_txt          = primary_event[ 'date' ].format 'dd DD.MM.YYYY HH:mm'
+      hl                = primary_event[ 'hl' ]
+      height            = primary_event[ 'height' ]
+      log TRM.gold date_txt, hl, height
+      secondary_events  = primary_event[ 'lunar-events' ]
+      #.....................................................................................................
+      if ( secondary_event = secondary_events[ 'phase' ]       )?
+        date_txt        = secondary_event[ 'date' ].format 'dd DD.MM.YYYY HH:mm'
+        quarter         = secondary_event[ 'marker' ]
+        symbol          = TIDES.options[ 'data' ][ 'moon' ][ 'unicode' ][ quarter ]
+        log TRM.lime date_txt, quarter, symbol
+      #.....................................................................................................
+      if ( secondary_event = secondary_events[ 'distance' ]    )?
+        date_txt        = secondary_event[ 'date' ].format 'dd DD.MM.YYYY HH:mm'
+        ap              = secondary_event[ 'marker' ]
+        distance_km     = secondary_event[ 'details' ][ 'distance.km' ]
+        log TRM.blue date_txt, ap, "#{distance_km}km"
+      #.....................................................................................................
+      if ( secondary_event = secondary_events[ 'declination' ] )?
+        date_txt        = secondary_event[ 'date' ].format 'dd DD.MM.YYYY HH:mm'
+        sn              = secondary_event[ 'marker' ]
+        declination_deg = secondary_event[ 'details' ][ 'declination.deg' ]
+        log TRM.red date_txt, sn, "#{declination_deg}°"
 
-#-----------------------------------------------------------------------------------------------------------
-@_demo_walk = ->
-  _                 = require 'lodash'
-  TIDES             = @
-  route             = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
-  tide_moon_counts  = []
-  tide_idx          = 0
-  last_moon_idx     = null
-  #---------------------------------------------------------------------------------------------------------
-  TIDES.walk route, ( error, event ) =>
-    throw error if error?
-    #.......................................................................................................
-    if event is null
-      # info tide_moon_counts
-      info _.countBy tide_moon_counts
-      return
-    #.......................................................................................................
-    tide_idx += 1
-    date      = event[ 'date' ]
-    date_txt  = date.format 'ddd, DD. MMM YYYY HH:mm'
-    hl        = event[ 'hl' ]
-    height    = event[ 'height' ]
-    event_txt = TRM.gold date_txt, hl, height
-    #.......................................................................................................
-    if ( moon_event = event[ 'moon' ] )?
-      if ( moon_event[ 'quarter' ] is 0 ) # or ( moon_event[ 'quarter' ] is 2 )
-        tide_moon_counts.push tide_idx - last_moon_idx if last_moon_idx?
-        last_moon_idx   = tide_idx
-      date            = moon_event[ 'date' ]
-      date_txt        = date.format 'ddd, D. MMM YYYY HH:mm'
-      quarter         = moon_event[ 'quarter' ]
-      symbol          = TIDES.options[ 'data' ][ 'moon' ][ 'unicode' ][ quarter ]
-      event_txt      += ' ' + TRM.lime date_txt, quarter, symbol
-    #.......................................................................................................
-    log event_txt
-  #---------------------------------------------------------------------------------------------------------
-  return null
 
-#-----------------------------------------------------------------------------------------------------------
-@_demo_walk_lunar_events = ->
-  @walk_lunar_distance_events ( error, event ) ->
-    throw error if error?
-    return if event is null
-    debug event[ 'category' ], event[ 'marker' ], event[ 'date' ].toString(), event[ 'details' ]
-  @walk_lunar_declination_events ( error, event ) ->
-    throw error if error?
-    return if event is null
-    debug event[ 'category' ], event[ 'marker' ], event[ 'date' ].toString(), event[ 'details' ]
+# #-----------------------------------------------------------------------------------------------------------
+# @_demo_align_tide_and_moon_events = ->
+#   # route         = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
+#   route         = njs_path.join __dirname, '../tidal-data/Yerseke.txt'
+#   tidal_events  = []
+#   lunar_events  = []
+#   #---------------------------------------------------------------------------------------------------------
+#   get_compare = ( probe_event ) =>
+#     return ( data_event ) =>
+#       return probe_event[ 'date' ] - data_event[ 'date' ]
+#   #---------------------------------------------------------------------------------------------------------
+#   collect = ( handler ) =>
+#     #-------------------------------------------------------------------------------------------------------
+#     TIDES.walk_tide_and_moon_events route, ( error, event ) =>
+#       return handler error if error?
+#       return handler null if event is null
+#       switch type = TYPES.type_of event
+#         when 'TIDES/lunar-event'
+#           lunar_events.push event
+#         when 'TIDES/tidal-event'
+#           tidal_events.push event
+#         else
+#           warn "unhandled event of type #{rpr type}"
+#   #---------------------------------------------------------------------------------------------------------
+#   splice = => # ( handler ) =>
+#     collect ( error ) =>
+#       throw error if error?
+#       for collection in [ lunar_events, ]
+#         for lunar_event in lunar_events
+#           lunar_date        = lunar_event[ 'date' ]
+#           lunar_date_txt    = lunar_date.format 'YY-MM-DD HH:mm Z', 'Europe/Amsterdam'
+#           # lunar_event_txt   = "#{lunar_date_txt} #{lunar_event[ 'category' ]} #{lunar_event[ 'marker' ]}"
+#           lunar_event_txt   = "#{lunar_date_txt} #{lunar_event[ 'quarter' ]}"
+#           idx               = bSearch.closest tidal_events, get_compare lunar_event
+#           tidal_event       = tidal_events[ idx ]
+#           tidal_date        = tidal_event[ 'date' ]
+#           tidal_date_txt    = tidal_date.format 'YY-MM-DD HH:mm Z', 'Europe/Amsterdam'
+#           tidal_event_txt   = "#{tidal_date_txt} #{tidal_event[ 'hl' ]}"
+#           log ( TRM.lime tidal_event_txt ), ( TRM.gold lunar_event_txt )
+#   #.........................................................................................................
+#   splice()
+#   return null
+
+# #-----------------------------------------------------------------------------------------------------------
+# @_demo_walk = ->
+#   _                 = require 'lodash'
+#   TIDES             = @
+#   route             = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
+#   tide_moon_counts  = []
+#   tide_idx          = 0
+#   last_moon_idx     = null
+#   #---------------------------------------------------------------------------------------------------------
+#   TIDES.walk route, ( error, event ) =>
+#     throw error if error?
+#     #.......................................................................................................
+#     if event is null
+#       # info tide_moon_counts
+#       info _.countBy tide_moon_counts
+#       return
+#     #.......................................................................................................
+#     tide_idx += 1
+#     date      = event[ 'date' ]
+#     date_txt  = date.format 'ddd, DD. MMM YYYY HH:mm'
+#     hl        = event[ 'hl' ]
+#     height    = event[ 'height' ]
+#     event_txt = TRM.gold date_txt, hl, height
+#     #.......................................................................................................
+#     if ( moon_event = event[ 'moon' ] )?
+#       if ( moon_event[ 'quarter' ] is 0 ) # or ( moon_event[ 'quarter' ] is 2 )
+#         tide_moon_counts.push tide_idx - last_moon_idx if last_moon_idx?
+#         last_moon_idx   = tide_idx
+#       date            = moon_event[ 'date' ]
+#       date_txt        = date.format 'ddd, D. MMM YYYY HH:mm'
+#       quarter         = moon_event[ 'quarter' ]
+#       symbol          = TIDES.options[ 'data' ][ 'moon' ][ 'unicode' ][ quarter ]
+#       event_txt      += ' ' + TRM.lime date_txt, quarter, symbol
+#     #.......................................................................................................
+#     log event_txt
+#   #---------------------------------------------------------------------------------------------------------
+#   return null
+
+# #-----------------------------------------------------------------------------------------------------------
+# @_demo_walk_lunar_events = ->
+#   @walk_lunar_distance_events ( error, event ) ->
+#     throw error if error?
+#     return if event is null
+#     debug event[ 'category' ], event[ 'marker' ], event[ 'date' ].toString(), event[ 'details' ]
+#   @walk_lunar_declination_events ( error, event ) ->
+#     throw error if error?
+#     return if event is null
+#     debug event[ 'category' ], event[ 'marker' ], event[ 'date' ].toString(), event[ 'details' ]
 
 #-----------------------------------------------------------------------------------------------------------
 @_demo_momentjs = ->
@@ -215,8 +254,6 @@ TRM.depth_of_inspect      = 2
 
 ############################################################################################################
 unless module.parent?
-  @_demo_walk_tidal_and_lunar_phase_events()
-  # @_demo_walk()
-  # @_demo_walk_lunar_events()
-  # @_demo_align_tide_and_moon_events()
+  # @_demo_walk_tidal_and_lunar_phase_event_batches()
+  @read_aligned_events()
 
