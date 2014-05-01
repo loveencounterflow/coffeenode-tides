@@ -103,7 +103,9 @@ TRM.depth_of_inspect      = 2
         date_txt        = secondary_event[ 'date' ].format 'dd DD.MM.YYYY HH:mm'
         ap              = secondary_event[ 'marker' ]
         distance_km     = secondary_event[ 'details' ][ 'distance.km' ]
-        log TRM.blue date_txt, ap, "#{distance_km}km"
+        distance_ed     = distance_km / 12742
+        # log TRM.blue date_txt, ap, "#{distance_km}km"
+        log TRM.blue date_txt, ap, "#{distance_ed}ed"
       #.....................................................................................................
       if ( secondary_event = secondary_events[ 'declination' ] )?
         date_txt        = secondary_event[ 'date' ].format 'dd DD.MM.YYYY HH:mm'
