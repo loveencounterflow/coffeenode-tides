@@ -26,24 +26,21 @@ bSearch                   = require 'coffeenode-bsearch'
 #...........................................................................................................
 eventually                = process.nextTick
 moment                    = require 'moment-timezone'
+ASYNC                     = require 'async'
 
 #-----------------------------------------------------------------------------------------------------------
-@moon_quarter_by_phases =
-  'NM':       0
-  'EK':       1
-  'VM':       2
-  'LK':       3
-
-#-----------------------------------------------------------------------------------------------------------
-@new_tide_event = ( source_line_nr, date, is_dst, hl, height ) ->
+@new_tidal_event = ( source_line_nr, date, is_dst, hl, height ) ->
   R =
-    '~isa':             'TIDES/tide-event'
+    '~isa':             'TIDES/tidal-event'
     'source-line-nr':   source_line_nr
     'date':             date
     'is-dst':           is_dst
     'hl':               hl
     'height':           height
-    'moon':             null
+    'lunar-events':
+      'phase':            null
+      'distance':         null
+      'declination':      null
   #.........................................................................................................
   return R
 
@@ -59,33 +56,32 @@ moment                    = require 'moment-timezone'
   return R
 
 #-----------------------------------------------------------------------------------------------------------
-@new_moon_event = ( source_line_nr, date, is_dst, moon_quarter ) ->
-  R =
-    '~isa':             'TIDES/moon-event'
-    'source-line-nr':   source_line_nr
-    'date':             date
-    'is-dst':           is_dst
-    'quarter':          moon_quarter
-  #.........................................................................................................
-  return R
-
-#-----------------------------------------------------------------------------------------------------------
 ### TNG: unified 'lunar event' type ###
-@new_lunar_event = ( source, category, marker, date, details = null ) ->
+@new_lunar_event = ( source_ref, category, marker, date, details = null ) ->
   switch category
-    when 'tide'
-      throw new Error "illegal marker #{rpr marker}" unless ( marker is 'h' ) or ( marker is 'l' )
+    when 'phase'
+      switch marker
+        when 0, 1, 2, 3 then null
+        else
+          throw new Error "illegal marker #{rpr marker} for category #{rpr category}"
     when 'distance'
-      throw new Error "illegal marker #{rpr marker}" unless ( marker is 'P' ) or ( marker is 'A' )
+      switch marker
+        when 'P', 'A' then null
+        else
+          throw new Error "illegal marker #{rpr marker} for category #{rpr category}"
     when 'declination'
-      throw new Error "illegal marker #{rpr marker}" unless ( marker is 'N' ) or ( marker is 'S' )
+      switch marker
+        when 'N', 'S' then null
+        else
+          throw new Error "illegal marker #{rpr marker} for category #{rpr category}"
     else
       throw new Error "illegal category #{rpr category}"
+  #.........................................................................................................
   R =
-    '~isa':             'TIDES/moon-event'
+    '~isa':             'TIDES/lunar-event'
     'category':         category
     'marker':           marker
-    'source':           source
+    'source-ref':       source_ref
     'date':             date
     'details':          details
   #.........................................................................................................
@@ -96,14 +92,15 @@ moment                    = require 'moment-timezone'
   #---------------------------------------------------------------------------------------------------------
   FS.lines_of route, ( error, source_line, source_line_nr ) =>
     return handler error if error?
-    return handler null, null if source_line is null
+    return handler null, null, null if source_line is null
     #.......................................................................................................
+    source_ref  = "#{route}##{source_line_nr}"
     source_line = source_line.trim()
     return if source_line[ 0 ] is '#'
     return if source_line.length is 0
     #.......................................................................................................
     fields  = source_line.split /\s+/
-    handler null, fields, source_line, source_line_nr
+    handler null, fields, source_line, source_ref
   #---------------------------------------------------------------------------------------------------------
   return null
 
@@ -112,7 +109,7 @@ moment                    = require 'moment-timezone'
   ### TAINT make configurable ###
   route = njs_path.join __dirname, '../tidal-data/apogees-and-perigees.txt'
   #---------------------------------------------------------------------------------------------------------
-  @walk_raw_fields route, ( error, fields, source_line, source_line_nr ) =>
+  @walk_raw_fields route, ( error, fields, source_line, source_ref ) =>
     return handler error if error?
     #.......................................................................................................
     if fields is null
@@ -127,20 +124,19 @@ moment                    = require 'moment-timezone'
       distance_km_txt
       marker ] = fields
     #.......................................................................................................
-    source      = "#{route}##{source_line_nr}"
     date        = moment.tz "#{date_txt} #{time_txt}", tz
     distance_km = parseInt distance_km_txt, 10
     ### TAINT make configurable ###
     marker      = if marker is 'Apogee' then 'A' else 'P'
     details     = 'distance.km': distance_km
-    handler null, @new_lunar_event source, 'distance', marker, date, details
+    handler null, @new_lunar_event source_ref, 'distance', marker, date, details
 
 #-----------------------------------------------------------------------------------------------------------
 @walk_lunar_declination_events = ( handler ) ->
   ### TAINT make configurable ###
   route = njs_path.join __dirname, '../tidal-data/declination-maxima.txt'
   #---------------------------------------------------------------------------------------------------------
-  @walk_raw_fields route, ( error, fields, source_line, source_line_nr ) =>
+  @walk_raw_fields route, ( error, fields, source_line, source_ref ) =>
     return handler error if error?
     #.......................................................................................................
     if fields is null
@@ -154,15 +150,17 @@ moment                    = require 'moment-timezone'
       tz
       declination_txt ] = fields
     #.......................................................................................................
-    source          = "#{route}##{source_line_nr}"
     date            = moment.tz "#{date_txt} #{time_txt}", tz
     marker          = declination_txt[ 0 ]
     declination_deg = parseFloat declination_txt[ 1 ... ], 10
     details         = 'declination.deg': declination_deg
-    handler null, @new_lunar_event source, 'declination', marker, date, details
+    #.......................................................................................................
+    handler null, @new_lunar_event source_ref, 'declination', marker, date, details
+  #---------------------------------------------------------------------------------------------------------
+  return null
 
 #-----------------------------------------------------------------------------------------------------------
-@walk_tide_and_moon_events = ( route, handler ) ->
+@_walk_tidal_and_lunar_phase_events = ( route, handler ) ->
   record_idx        = -1
   datetime_format   = @options[ 'data' ][ 'date' ][ 'raw-format' ]
   timezone          = @options[ 'data' ][ 'date' ][ 'timezone' ]
@@ -171,7 +169,7 @@ moment                    = require 'moment-timezone'
   min_h_height      = +Infinity
   max_h_height      = -Infinity
   #---------------------------------------------------------------------------------------------------------
-  @walk_raw_fields route, ( error, fields, source_line, source_line_nr ) =>
+  @walk_raw_fields route, ( error, fields, source_line, source_ref ) =>
     return handler error if error?
     #.......................................................................................................
     if fields is null
@@ -202,7 +200,7 @@ moment                    = require 'moment-timezone'
         moon_quarter    = @options[ 'data' ][ 'moon' ][ 'quarter-by-phases' ][ moon_phase ]
       #.....................................................................................................
       else
-        return handler new Error "unable to parse line #{source_line_nr}: #{rpr source_line}"
+        return handler new Error "unable to parse line #{source_ref}:\n#{rpr source_line}"
     #.......................................................................................................
     height  = parseInt height_txt, 10
     is_dst  = /\+$/.test tide_time_txt
@@ -222,257 +220,139 @@ moment                    = require 'moment-timezone'
     tide_date = moment.tz "#{date_txt} #{tide_time_txt}", datetime_format, timezone
     ### TAINT use @options ###
     tide_date.lang 'nl'
-    handler null, @new_tide_event source_line_nr, tide_date, is_dst, hl, height
+    handler null, @new_tidal_event source_ref, tide_date, is_dst, hl, height
     #.......................................................................................................
     return unless moon_phase?
     moon_date = moment.tz "#{date_txt} #{moon_time_txt}", datetime_format, timezone
     ### TAINT use @options ###
     moon_date.lang 'nl'
-    handler null, @new_moon_event source_line_nr, moon_date, is_dst, moon_quarter
+    handler null, @new_lunar_event source_ref, 'phase', moon_quarter, moon_date
   #---------------------------------------------------------------------------------------------------------
   return null
 
 #-----------------------------------------------------------------------------------------------------------
-@walk_events_extrema_first = ( route, handler ) ->
-  buffer                  = []
+@walk_tidal_and_lunar_phase_events = ( route, handler ) ->
+  ### Same as `_walk_tidal_and_lunar_phase_events`, but delivers the tidal extrema first, so consumers know
+  beforehand about tidal extrema to be expected. ###
+  tidal_extrema_event   = null
+  tidal_hl_event_buffer = []
+  lunar_event_buffer    = []
+  tasks                 = []
   #---------------------------------------------------------------------------------------------------------
-  @walk_tide_and_moon_events route, ( error, event ) =>
-    return handler error if error?
-    #.......................................................................................................
-    if event is null
-      handler null, event for event in buffer
-      return handler null, null
-    #.......................................................................................................
-    return handler null, event if TYPES.isa event, 'TIDES/tidal-extrema-event'
-    buffer.push event
-  #---------------------------------------------------------------------------------------------------------
-  return null
-
-#-----------------------------------------------------------------------------------------------------------
-@walk = ( route, handler ) ->
-  tide_buffer             = []
-  tide_buffer_max_length  = 6
-  moon_buffer             = []
-  waiting_for_moon        = no
-  #---------------------------------------------------------------------------------------------------------
-  find_closest_tide_for_moon_event = =>
-    return if moon_buffer.length is 0
-    if moon_buffer.length > 1
-      return handler new Error "too many moon events in buffer (#{moon_buffer.length})"
-    moon_event  = moon_buffer.shift()
-    moon_date   = moon_event[ 'date' ]
-    #.....................................................................................................
-    dt_min = Infinity
-    for tide_event in tide_buffer
-      tide_date     = tide_event[ 'date' ]
-      dt            = Math.abs ( moment.duration tide_date.diff moon_date ).asHours()
-      continue if dt > dt_min
-      dt_min        = dt
-      target_event  = tide_event
-    #.....................................................................................................
-    target_event[ 'moon' ] = moon_event
-  #---------------------------------------------------------------------------------------------------------
-  clear_tide_buffer = ( max_length ) =>
-    while tide_buffer.length > max_length
-      # whisper "clearing tide buffer"
-      handler null, tide_buffer.shift()
-  #---------------------------------------------------------------------------------------------------------
-  @walk_events_extrema_first route, ( error, event ) =>
-    return handler error if error?
-    #.......................................................................................................
-    ### Release remaining buffer contents and finish: ###
-    ### TAINT must look for remaining moon entries in buffer ###
-    if event is null
-      find_closest_tide_for_moon_event()
-      clear_tide_buffer 0
-      if moon_buffer.length isnt 0
-        return handler new Error "found #{moon_buffer.length} unprocessed moon events"
-      return handler null, null
-    #.......................................................................................................
-    switch type = event[ '~isa' ]
-      when 'TIDES/tide-event'
-        tide_buffer.push event
-      when 'TIDES/moon-event'
-        moon_buffer.push event
-        waiting_for_moon = yes
-      when 'TIDES/tidal-extrema-event'
-        @options[ 'data' ][ 'tides' ][ 'min-l-height' ] = event[ 'min-l-height' ]
-        @options[ 'data' ][ 'tides' ][ 'max-l-height' ] = event[ 'max-l-height' ]
-        @options[ 'data' ][ 'tides' ][ 'min-h-height' ] = event[ 'min-h-height' ]
-        @options[ 'data' ][ 'tides' ][ 'max-h-height' ] = event[ 'max-h-height' ]
-      else
-        return handler new Error "unknown event type #{rpr type}"
-    #.......................................................................................................
-    if waiting_for_moon
-      if ( tide_buffer.length >= tide_buffer_max_length )
-        find_closest_tide_for_moon_event()
-        waiting_for_moon = no
-        clear_tide_buffer 0
-    #.......................................................................................................
-    else
-      clear_tide_buffer 2
-
-
-#===========================================================================================================
-# DEMOS
-#-----------------------------------------------------------------------------------------------------------
-@_demo_walk_tide_and_moon_events = ->
-  TIDES = @
-  route = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
-  #---------------------------------------------------------------------------------------------------------
-  TIDES.walk_tide_and_moon_events route, ( error, event ) =>
-    throw error if error?
-    return if event is null
-    date      = event[ 'date' ]
-    date_txt  = if date? then date.format 'dddd, D. MMMM YYYY HH:mm' else './.'
-    switch type = TYPES.type_of event
-      when 'TIDES/moon-event'
-        quarter = event[ 'quarter' ]
-        symbol  = TIDES.options[ 'data' ][ 'moon' ][ 'unicode' ][ quarter ]
-        log TRM.lime date_txt, quarter, symbol
-      when 'TIDES/tide-event'
-        hl      = event[ 'hl' ]
-        height  = event[ 'height' ]
-        log TRM.gold date_txt, hl, height
-      when 'TIDES/tidal-extrema-event'
-        log TRM.gold event
-      else
-        warn "unhandled event of type #{rpr type}"
-  #---------------------------------------------------------------------------------------------------------
-  return null
-
-#-----------------------------------------------------------------------------------------------------------
-@_demo_align_tide_and_moon_events = ->
-  TIDES         = @
-  # route         = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
-  route         = njs_path.join __dirname, '../tidal-data/Yerseke.txt'
-  tidal_events  = []
-  lunar_events  = []
-  #---------------------------------------------------------------------------------------------------------
-  get_compare = ( probe_event ) =>
-    return ( data_event ) =>
-      return probe_event[ 'date' ] - data_event[ 'date' ]
-  #---------------------------------------------------------------------------------------------------------
-  collect = ( handler ) =>
+  tasks.push ( done ) =>
     #-------------------------------------------------------------------------------------------------------
-    TIDES.walk_tide_and_moon_events route, ( error, event ) =>
+    @_walk_tidal_and_lunar_phase_events route, ( error, event ) =>
       return handler error if error?
-      return handler null if event is null
-      switch type = TYPES.type_of event
-        when 'TIDES/moon-event'
-          lunar_events.push event
-        when 'TIDES/tide-event'
-          tidal_events.push event
+      return done null if event is null
+      #.....................................................................................................
+      switch types = TYPES.type_of event
+        when 'TIDES/tidal-extrema-event'
+          tidal_extrema_event = event
+        when 'TIDES/tidal-event'
+          tidal_hl_event_buffer.push event
+        when 'TIDES/lunar-event'
+          lunar_event_buffer.push event
         else
-          warn "unhandled event of type #{rpr type}"
+          warn "skipped event of type #{rpr type}"
   #---------------------------------------------------------------------------------------------------------
-  splice = => # ( handler ) =>
-    collect ( error ) =>
-      throw error if error?
-      for collection in [ lunar_events, ]
-        for lunar_event in lunar_events
-          lunar_date        = lunar_event[ 'date' ]
-          lunar_date_txt    = lunar_date.format 'YY-MM-DD HH:mm Z', 'Europe/Amsterdam'
-          # lunar_event_txt   = "#{lunar_date_txt} #{lunar_event[ 'category' ]} #{lunar_event[ 'marker' ]}"
-          lunar_event_txt   = "#{lunar_date_txt} #{lunar_event[ 'quarter' ]}"
-          idx               = bSearch.closest tidal_events, get_compare lunar_event
-          tidal_event       = tidal_events[ idx ]
-          tidal_date        = tidal_event[ 'date' ]
-          tidal_date_txt    = tidal_date.format 'YY-MM-DD HH:mm Z', 'Europe/Amsterdam'
-          tidal_event_txt   = "#{tidal_date_txt} #{tidal_event[ 'hl' ]}"
-          log ( TRM.lime tidal_event_txt ), ( TRM.gold lunar_event_txt )
-  #.........................................................................................................
-  splice()
-  return null
-
-#-----------------------------------------------------------------------------------------------------------
-@_demo_walk = ->
-  _                 = require 'lodash'
-  TIDES             = @
-  route             = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
-  tide_moon_counts  = []
-  tide_idx          = 0
-  last_moon_idx     = null
+  tasks.push ( done ) =>
+    #-------------------------------------------------------------------------------------------------------
+    ### TAINT pass in route? use options? ###
+    @walk_lunar_distance_events ( error, event ) =>
+      return handler error if error?
+      return done null if event is null
+      #.....................................................................................................
+      lunar_event_buffer.push event
   #---------------------------------------------------------------------------------------------------------
-  TIDES.walk route, ( error, event ) =>
-    throw error if error?
-    #.......................................................................................................
-    if event is null
-      # info tide_moon_counts
-      info _.countBy tide_moon_counts
-      return
-    #.......................................................................................................
-    tide_idx += 1
-    date      = event[ 'date' ]
-    date_txt  = date.format 'ddd, DD. MMM YYYY HH:mm'
-    hl        = event[ 'hl' ]
-    height    = event[ 'height' ]
-    event_txt = TRM.gold date_txt, hl, height
-    #.......................................................................................................
-    if ( moon_event = event[ 'moon' ] )?
-      if ( moon_event[ 'quarter' ] is 0 ) # or ( moon_event[ 'quarter' ] is 2 )
-        tide_moon_counts.push tide_idx - last_moon_idx if last_moon_idx?
-        last_moon_idx   = tide_idx
-      date            = moon_event[ 'date' ]
-      date_txt        = date.format 'ddd, D. MMM YYYY HH:mm'
-      quarter         = moon_event[ 'quarter' ]
-      symbol          = TIDES.options[ 'data' ][ 'moon' ][ 'unicode' ][ quarter ]
-      event_txt      += ' ' + TRM.lime date_txt, quarter, symbol
-    #.......................................................................................................
-    log event_txt
+  tasks.push ( done ) =>
+    #-------------------------------------------------------------------------------------------------------
+    ### TAINT pass in route? use options? ###
+    @walk_lunar_declination_events ( error, event ) =>
+      return handler error if error?
+      return done null if event is null
+      #.....................................................................................................
+      lunar_event_buffer.push event
+  #---------------------------------------------------------------------------------------------------------
+  ASYNC.parallel tasks, ( error ) =>
+    return handler error if error?
+    handler null, tidal_extrema_event
+    handler null, event for event in tidal_hl_event_buffer
+    handler null, event for event in lunar_event_buffer
+    return handler null, null
   #---------------------------------------------------------------------------------------------------------
   return null
 
-#-----------------------------------------------------------------------------------------------------------
-@_demo_walk_lunar_events = ->
-  @walk_lunar_distance_events ( error, event ) ->
-    throw error if error?
-    return if event is null
-    debug event[ 'category' ], event[ 'marker' ], event[ 'date' ].toString(), event[ 'details' ]
-  @walk_lunar_declination_events ( error, event ) ->
-    throw error if error?
-    return if event is null
-    debug event[ 'category' ], event[ 'marker' ], event[ 'date' ].toString(), event[ 'details' ]
+
+# #-----------------------------------------------------------------------------------------------------------
+# @walk = ( route, handler ) ->
+#   tide_buffer             = []
+#   tide_buffer_max_length  = 6
+#   moon_buffer             = []
+#   waiting_for_moon        = no
+#   #---------------------------------------------------------------------------------------------------------
+#   find_closest_tide_for_moon_event = =>
+#     return if moon_buffer.length is 0
+#     if moon_buffer.length > 1
+#       return handler new Error "too many moon events in buffer (#{moon_buffer.length})"
+#     moon_event  = moon_buffer.shift()
+#     moon_date   = moon_event[ 'date' ]
+#     #.....................................................................................................
+#     dt_min = Infinity
+#     for tide_event in tide_buffer
+#       tide_date     = tide_event[ 'date' ]
+#       dt            = Math.abs ( moment.duration tide_date.diff moon_date ).asHours()
+#       continue if dt > dt_min
+#       dt_min        = dt
+#       target_event  = tide_event
+#     #.....................................................................................................
+#     target_event[ 'moon' ] = moon_event
+#   #---------------------------------------------------------------------------------------------------------
+#   clear_tide_buffer = ( max_length ) =>
+#     while tide_buffer.length > max_length
+#       # whisper "clearing tide buffer"
+#       handler null, tide_buffer.shift()
+#   #---------------------------------------------------------------------------------------------------------
+#   @walk_events_extrema_first route, ( error, event ) =>
+#     return handler error if error?
+#     #.......................................................................................................
+#     ### Release remaining buffer contents and finish: ###
+#     ### TAINT must look for remaining moon entries in buffer ###
+#     if event is null
+#       find_closest_tide_for_moon_event()
+#       clear_tide_buffer 0
+#       if moon_buffer.length isnt 0
+#         return handler new Error "found #{moon_buffer.length} unprocessed moon events"
+#       return handler null, null
+#     #.......................................................................................................
+#     switch type = event[ '~isa' ]
+#       when 'TIDES/tidal-event'
+#         tide_buffer.push event
+#       when 'TIDES/lunar-event'
+#         moon_buffer.push event
+#         waiting_for_moon = yes
+#       when 'TIDES/tidal-extrema-event'
+#         @options[ 'data' ][ 'tides' ][ 'min-l-height' ] = event[ 'min-l-height' ]
+#         @options[ 'data' ][ 'tides' ][ 'max-l-height' ] = event[ 'max-l-height' ]
+#         @options[ 'data' ][ 'tides' ][ 'min-h-height' ] = event[ 'min-h-height' ]
+#         @options[ 'data' ][ 'tides' ][ 'max-h-height' ] = event[ 'max-h-height' ]
+#       else
+#         return handler new Error "unknown event type #{rpr type}"
+#     #.......................................................................................................
+#     if waiting_for_moon
+#       if ( tide_buffer.length >= tide_buffer_max_length )
+#         find_closest_tide_for_moon_event()
+#         waiting_for_moon = no
+#         clear_tide_buffer 0
+#     #.......................................................................................................
+#     else
+#       clear_tide_buffer 2
+
+
 
 ############################################################################################################
 unless module.parent?
   # @_demo_walk_tide_and_moon_events()
   # @_demo_walk()
   # @_demo_walk_lunar_events()
-  # @_demo_align_tide_and_moon_events()
-
-  info moment() - moment '2012-01-01'
-  info
-  #.format()
-
-  new Date '2014-12-28T19:31'
-  new Date '2014-12-27T00:51'
-  new Date '2014-12-27T07:12'
-  new Date '2014-12-27T13:20'
-  new Date '2014-12-27T19:46'
-  new Date '2014-12-28T01:45'
-  new Date '2014-12-28T08:06'
-  new Date '2014-12-28T14:16'
-  new Date '2014-12-28T20:40'
-  new Date '2014-12-29T02:41'
-  new Date '2014-12-29T08:58'
-  new Date '2014-12-29T15:10'
-  new Date '2014-12-29T21:38'
-  new Date '2014-12-30T03:35'
-  new Date '2014-12-30T10:02'
-  new Date '2014-12-30T16:09'
-  new Date '2014-12-30T22:45'
-
-# dates = []
-# for m in [ 55 .. 59 ]
-#   dates.push "2014-10-26T00:#{m}"
-# for m in [ 0 .. 4 ]
-#   dates.push "2014-10-26T01:0#{m}"
-
-dates = [
-  new Date '2014-10-26T00:59'
-  new Date '2014-10-26T01:00' ]
-
-console.log dates
-console.log dates.sort()
+  @_demo_align_tide_and_moon_events()
 
