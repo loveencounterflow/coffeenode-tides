@@ -114,6 +114,19 @@ TRM.depth_of_inspect      = 2
         log TRM.red date_txt, sn, "#{declination_deg.toFixed 1}°"
     #.......................................................................................................
     whisper extrema_event_batch
+    whisper "#{( extrema_event_batch[ 'distance' ][ 'min-distance.km' ] / 12742 ).toFixed 3}ed"
+    whisper "#{( extrema_event_batch[ 'distance' ][ 'max-distance.km' ] / 12742 ).toFixed 3}ed"
+    whisper """According to https://www.fourmilab.ch/earthview/moon_ap_per.html:
+       The closest perigee in the years 1750 through 2125 was
+       356375 km on 4th January 1912; the most distant apogee in the same period will be
+       406720 km on 3rd February 2125
+
+      According to http://www.geoastro.de/moon/FullMoon/index.html:
+      The extreme distances for 1500 to 2500 are (according to J. Meeus)
+        356371 km on 2257 Jan 1 == #{( 356371 / 12742 ).toFixed 3}ed
+        406720 km on 2266 Jan 7 == #{( 406720 / 12742 ).toFixed 3}ed
+      """
+
 
 # #-----------------------------------------------------------------------------------------------------------
 # @_demo_align_tide_and_moon_events = ->
