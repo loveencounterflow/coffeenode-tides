@@ -21,6 +21,7 @@ help                      = TRM.get_logger 'help',      badge
 echo                      = TRM.echo.bind TRM
 TIDES                     = require './main'
 GM                        = require 'gm'
+FI                        = require 'coffeenode-fillin'
 
 ### TAINT must go into TIDES/options ###
 options =
@@ -121,22 +122,28 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
     .fill 'transparent'
     .stroke 'black', 2
   #.........................................................................................................
-  ### draw LAT vertical ###
-  x0 = x1 = @_image_px_from_real_cm 0
-  y0 = @_image_px_from_y_raw  0
-  y1 = @_image_px_from_y_raw 60
-  image
-    .stroke 'black', 1
-    .drawLine x0, y0, x1, y1
+  # ### draw LAT vertical ###
+  # x0 = x1 = @_image_px_from_real_cm 0
+  # y0 = @_image_px_from_y_raw  0
+  # y1 = @_image_px_from_y_raw 60
+  # image
+  #   .stroke 'black', 1
+  #   .drawLine x0, y0, x1, y1
   #.........................................................................................................
   ### draw ( min, max ) ( h, l ) verticals ###
-  for name in 'max-l-height min-h-height max-h-height'.split /\s+/
-    x0 = x1 = @_image_px_from_real_cm TIDES[ 'options' ][ 'data' ][ 'tides' ][ name ]
-    y0 = @_image_px_from_y_raw  0
-    y1 = @_image_px_from_y_raw 60
-    image
-      .stroke 'red', 1
-      .drawLine x0, y0, x1, y1
+  ### TAINT make configurable ###
+  names_and_colors = [
+    [ [ 'min-l-height', 'max-l-height', ], 'red'  ]
+    [ [ 'min-h-height', 'max-h-height', ], 'blue' ]
+    ]
+  for [ names, color, ] in names_and_colors
+    for name in names
+      x0 = x1 = @_image_px_from_real_cm FI.get TIDES.options, "/data/extrema/tides/#{name}"
+      y0 = @_image_px_from_y_raw  0
+      y1 = @_image_px_from_y_raw 60
+      image
+        .stroke color, 1
+        .drawLine x0, y0, x1, y1
   #.........................................................................................................
   ### draw NAP vertical ###
   ### TAINT must get NAP - LAT difference from RWS for each location ###
@@ -147,6 +154,7 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
     .stroke 'black', 1
     .drawLine x0, y0, x1, y1
   #.........................................................................................................
+  last_idx = bezier_hl_points.length - 1
   for [ hl, points, ], idx in bezier_hl_points
     image
       .stroke 'black', 4
@@ -162,6 +170,14 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
     image
       .stroke 'black', 1
       .drawLine x0, y0, x1, y1
+    if idx is last_idx
+      hl3 = if hl is 'h' then 'l' else 'h'
+      x0  = points[ 3 ][ 0 ]
+      x1  = @_image_px_from_origin_mm ( if hl3 is 'h' then 35 else 50 ) + 1
+      y0  = y1 = points[ 3 ][ 1 ]
+      image
+        .stroke 'black', 1
+        .drawLine x0, y0, x1, y1
   #.........................................................................................................
   for collection in [ bezier_h_points, bezier_l_points, ]
     for [ hl, points, ], idx in collection

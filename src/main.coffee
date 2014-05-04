@@ -27,6 +27,8 @@ bSearch                   = require 'coffeenode-bsearch'
 eventually                = process.nextTick
 moment                    = require 'moment-timezone'
 ASYNC                     = require 'async'
+FI                        = require 'coffeenode-fillin'
+
 
 #-----------------------------------------------------------------------------------------------------------
 @new_tidal_event = ( source_line_nr, date, is_dst, hl, height ) ->
@@ -74,7 +76,6 @@ ASYNC                     = require 'async'
   return R
 
 #-----------------------------------------------------------------------------------------------------------
-### TNG: unified 'lunar event' type ###
 @new_lunar_event = ( source_ref, category, marker, date, details = null ) ->
   switch category
     when 'phase'
@@ -152,7 +153,7 @@ ASYNC                     = require 'async'
     details         = 'distance.km': distance_km
     min_distance_km = Math.min min_distance_km, distance_km
     max_distance_km = Math.max max_distance_km, distance_km
-    handler null, @new_lunar_event source_ref, 'distance', marker, date, details
+    handler null, R = @new_lunar_event source_ref, 'distance', marker, date, details
 
 #-----------------------------------------------------------------------------------------------------------
 @walk_lunar_declination_events = ( handler ) ->
@@ -202,6 +203,10 @@ ASYNC                     = require 'async'
     #.......................................................................................................
     if fields is null
       handler null, @new_tidal_extrema_event min_l_height, max_l_height, min_h_height, max_h_height
+      FI.set @options, '/data/extrema/tides/min-l-height', min_l_height
+      FI.set @options, '/data/extrema/tides/max-l-height', max_l_height
+      FI.set @options, '/data/extrema/tides/min-h-height', min_h_height
+      FI.set @options, '/data/extrema/tides/max-h-height', max_h_height
       return handler null, null
     #.......................................................................................................
     columns     = []
@@ -304,10 +309,10 @@ ASYNC                     = require 'async'
       return handler error if error?
       return done null if event is null
       #.....................................................................................................
-      if TYPES.type_of event is 'TIDES/lunar-distance-extremum-event'
-        return extrema_event_batch[ 'distance' ] = event
-      #.....................................................................................................
-      lunar_event_batch.push event
+      if event[ '~isa' ] == 'TIDES/lunar-distance-extremum-event'
+        extrema_event_batch[ 'distance' ] = event
+      else
+        lunar_event_batch.push event
   #---------------------------------------------------------------------------------------------------------
   tasks.push ( done ) =>
     #-------------------------------------------------------------------------------------------------------
@@ -316,10 +321,10 @@ ASYNC                     = require 'async'
       return handler error if error?
       return done null if event is null
       #.....................................................................................................
-      if TYPES.type_of event is 'TIDES/lunar-declination-extremum-event'
-        return extrema_event_batch[ 'declination' ] = event
-      #.....................................................................................................
-      lunar_event_batch.push event
+      if event[ '~isa' ] == 'TIDES/lunar-declination-extremum-event'
+        extrema_event_batch[ 'declination' ] = event
+      else
+        lunar_event_batch.push event
   #---------------------------------------------------------------------------------------------------------
   ASYNC.parallel tasks, ( error ) =>
     return handler error if error?
@@ -356,8 +361,8 @@ ASYNC                     = require 'async'
       tidal_hl_event_batch
       lunar_event_batch         ] = event_batches
     #.......................................................................................................
-    for lunar_event in lunar_event_batch
-      @_align_lunar_with_tidal_event tidal_hl_event_batch, lunar_event
+    for event in lunar_event_batch
+      @_align_lunar_with_tidal_event tidal_hl_event_batch, event
     #.......................................................................................................
     return handler null, [ extrema_event_batch, tidal_hl_event_batch, ]
   #---------------------------------------------------------------------------------------------------------
@@ -366,7 +371,11 @@ ASYNC                     = require 'async'
 
 
 # ############################################################################################################
-# unless module.parent?
+unless module.parent?
+  route = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
+  @read_aligned_events route, ( error, ignored ) ->
+    throw error if error?
+    debug 'ok'
 #   # @_demo_walk_tide_and_moon_events()
 #   # @_demo_walk()
 #   # @_demo_walk_lunar_events()

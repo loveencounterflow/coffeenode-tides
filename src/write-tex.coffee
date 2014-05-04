@@ -24,6 +24,8 @@ echo                      = TRM.echo.bind TRM
 # XDate                     = require 'xdate'
 TEX                       = require 'jizura-xelatex'
 TIDES                     = require './main'
+FI                        = require 'coffeenode-fillin'
+sine                      = require './sine'
 @_draw_curves_with_gm     = require './draw-curves-with-gm'
 #...........................................................................................................
 read = ( route ) ->
@@ -69,10 +71,10 @@ thinspace                 = '\u2009'
   #.........................................................................................................
   # echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[width=118mm]{#{route}}}"""
   ### TAINT inefficient to retrieve each time; options should use cache ###
-  align_x     = TIDES.options.get '/values/layout/month/odd/align/x'
-  align_y     = TIDES.options.get '/values/layout/month/odd/align/y'
-  position_x  = ( TIDES.options.get '/values/layout/month/odd/position/x' ) + 'mm'
-  position_y  = ( TIDES.options.get '/values/layout/month/odd/position/y' ) + 'mm'
+  align_x     = FI.get TIDES.options, '/values/layout/month/odd/align/x'
+  align_y     = FI.get TIDES.options, '/values/layout/month/odd/align/y'
+  position_x  = ( FI.get TIDES.options, '/values/layout/month/odd/position/x' ) + 'mm'
+  position_y  = ( FI.get TIDES.options, '/values/layout/month/odd/position/y' ) + 'mm'
   #.........................................................................................................
   switch alignment = align_x
     when 'left'   then pa_command = paLeftGauge
@@ -100,6 +102,33 @@ thinspace                 = '\u2009'
   return "#{value}#{unit}"
 
 #-----------------------------------------------------------------------------------------------------------
+@_get_moon_phase = ( lunar_events ) ->
+  return [ null, null, ] unless ( event = lunar_events[ 'phase' ] )?
+  # date_txt        = event[ 'date' ].format 'dd DD.MM.YYYY HH:mm'
+  moon_quarter    = event[ 'marker' ]
+  moon_symbol     = FI.get TIDES.options, "/values/moon/quarters/#{moon_quarter}"
+  return [ moon_quarter, moon_symbol, ]
+
+#-----------------------------------------------------------------------------------------------------------
+@_get_moon_distance = ( lunar_events ) ->
+  return [ null, null, null, ] unless ( event = lunar_events[ 'distance' ] )?
+  # date_txt        = event[ 'date' ].format 'dd DD.MM.YYYY HH:mm'
+  ap              = event[ 'marker' ]
+  ap_symbol       = FI.get TIDES.options, "/values/moon/distance/#{ap}"
+  distance_km     = event[ 'details' ][ 'distance.km' ]
+  distance_ed     = distance_km / 12742
+  return[ ap, ap_symbol, distance_ed, ]
+
+#-----------------------------------------------------------------------------------------------------------
+@_get_moon_declination = ( lunar_events ) ->
+  return [ null, null, null, ] unless ( event = lunar_events[ 'declination' ] )?
+  # date_txt        = event[ 'date' ].format 'dd DD.MM.YYYY HH:mm'
+  sn              = event[ 'marker' ]
+  sn_symbol       = FI.get TIDES.options, "/values/moon/declination/#{sn}"
+  declination_deg = event[ 'details' ][ 'declination.deg' ]
+  return [ sn, sn_symbol, declination_deg, ]
+
+#-----------------------------------------------------------------------------------------------------------
 @main = ->
   ### TAINT must parametrize data source ###
   route         = njs_path.join __dirname, '../tidal-data/Yerseke.txt'
@@ -115,85 +144,95 @@ thinspace                 = '\u2009'
   wrote_header  = no
   echo preamble
   #---------------------------------------------------------------------------------------------------------
-  TIDES.walk route, ( error, tide_event ) =>
+  TIDES.read_aligned_events route, ( error, event_batches ) =>
     throw error if error?
     #.......................................................................................................
-    if tide_event is null
-      # echo TEX.rpr @draw_curves hi_dots, lo_dots
-      echo postscript
-      return
+    [ extrema_event_batch
+      tidal_hl_event_batch      ] = event_batches
+    throw error if error?
     #.......................................................................................................
-    row_idx      += 1
-    moon_event    = tide_event[ 'moon' ]
-    date          = tide_event[ 'date' ]
-    this_day      = date.date()
-    this_month    = date.month()
-    moon_quarter  = if moon_event? then moon_event[ 'quarter' ] else null
+    for tidal_event in tidal_hl_event_batch
+      row_idx      += 1
+      lunar_events  = tidal_event[ 'lunar-events' ]
+      [ moon_quarter, moon_symbol,                  ] = @_get_moon_phase        lunar_events
+      [ ap,             ap_symbol, distance_ed,     ] = @_get_moon_distance     lunar_events
+      [ sn,             sn_symbol, declination_deg, ] = @_get_moon_declination  lunar_events
+      #.....................................................................................................
+      date          = tidal_event[ 'date' ]
+      this_day      = date.date()
+      this_month    = date.month()
+      #.....................................................................................................
+      unless wrote_header
+        this_month_tex = @format_month_name date
+        echo TEX.rpr this_month_tex
+        wrote_header = yes
+      #.....................................................................................................
+      if moon_quarter is 0 or moon_quarter is 2
+        ### TAINT collect these in a 'newpage' function ###
+        row_idx   = 0
+        page_nr  += 1
+        #---------------------------------------------------------------------------------------------------
+        do ( page_nr, dots ) =>
+          #-------------------------------------------------------------------------------------------------
+          if page_nr < 8 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            ### TAINT asynchronous handling is missing ###
+            info "drawing image #{page_nr}"
+            route = njs_path.join '/tmp', "tides-p#{page_nr}.png"
+            # echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[height=178mm]{#{route}}}"""
+            echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[width=118mm]{#{route}}}"""
+            @draw_curves route, dots, ( error ) =>
+              info "image #{page_nr} ok"
+              throw error if error?
+        #---------------------------------------------------------------------------------------------------
+        dots      = []
+        echo """\\null\\newpage"""
+      #.....................................................................................................
+      ### TAINT measurements should be defined in options ###
+      textheight  = 178 # mm
+      line_count  = 62
+      module      = textheight / line_count
+      unit        = 'mm'
+      y_position  = @_y_position_from_row_idx row_idx, module, unit
+      #.....................................................................................................
+      ### TAINT take horizontal positions from options ###
+      if moon_symbol?
+        echo """\\paRight{10mm}{#{y_position}}{#{moon_symbol}}"""
+      if ap?
+        echo """\\paRight{6mm}{#{y_position}}{#{ap_symbol}}"""
+      if sn?
+        echo """\\paRight{2mm}{#{y_position}}{#{sn_symbol}}"""
+      #.....................................................................................................
+      unless last_day is this_day
+        last_day  = this_day
+        ### TAINT days y to be adjusted ###
+        month_txt = date.format 'MM'
+        day_txt   = date.format 'DD'
+        echo """\\paRight{20mm}{#{y_position}}{#{month_txt}-#{day_txt}}"""
+      #.....................................................................................................
+      unless last_month is this_month
+        last_month = this_month
+        echo """\\typeout{\\trmSolCyan{#{date.format 'YYYY-MM-DD'}}}"""
+      #.....................................................................................................
+      hl      = tidal_event[ 'hl' ]
+      height  = tidal_event[ 'height' ]
+      dots.push [ hl, [ height, dots.length, ], ]
+      #.....................................................................................................
+      switch hl
+        when 'h'
+          x_position = '35mm'
+        when 'l'
+          x_position = '50mm'
+        else
+          throw new Error "expected `h` or `l` for hl indicator, got #{rpr hl}"
+      #.....................................................................................................
+      ### TAINT use proper escaping ###
+      dst       = if tidal_event[ 'is-dst' ] then '+' else ''
+      time_txt  = date.format "HH[#{thinspace}]:[#{thinspace}]mm"
+      echo """\\paRight{#{x_position}}{#{y_position}}{#{time_txt}}"""
     #.......................................................................................................
-    unless wrote_header
-      this_month_tex = @format_month_name date
-      echo TEX.rpr this_month_tex
-      wrote_header = yes
-    #.......................................................................................................
-    if moon_quarter is 0 or moon_quarter is 2
-      ### TAINT collect these in a 'newpage' function ###
-      row_idx   = 0
-      page_nr  += 1
-      #---------------------------------------------------------------------------------------------------
-      do ( page_nr, dots ) =>
-        #-------------------------------------------------------------------------------------------------
-        if page_nr < 5 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          ### TAINT asynchronous handling is missing ###
-          info "drawing image #{page_nr}"
-          route = njs_path.join '/tmp', "tides-p#{page_nr}.png"
-          # echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[height=178mm]{#{route}}}"""
-          echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[width=118mm]{#{route}}}"""
-          @draw_curves route, dots, ( error ) =>
-            info "image #{page_nr} ok"
-            throw error if error?
-      #---------------------------------------------------------------------------------------------------
-      dots      = []
-      echo """\\null\\newpage"""
-    #.......................................................................................................
-    ### TAINT measurements should be defined in options ###
-    textheight  = 178 # mm
-    line_count  = 62
-    module      = textheight / line_count
-    unit        = 'mm'
-    y_position  = @_y_position_from_row_idx row_idx, module, unit
-    #.......................................................................................................
-    ### TAINT Unfortunate solution to again ask for moon quarter ###
-    if moon_quarter?
-      moon_symbol = TIDES.options.get "/values/moon/#{moon_quarter}"
-      echo """\\paRight{10mm}{#{y_position}}{#{moon_symbol}}"""
-    #.......................................................................................................
-    unless last_day is this_day
-      last_day  = this_day
-      ### TAINT days y to be adjusted ###
-      month_txt = date.format 'MM'
-      day_txt   = date.format 'DD'
-      echo """\\paRight{20mm}{#{y_position}}{#{month_txt}-#{day_txt}}"""
-    #.......................................................................................................
-    unless last_month is this_month
-      last_month = this_month
-      echo """\\typeout{\\trmSolCyan{#{date.format 'YYYY-MM-DD'}}}"""
-    #.......................................................................................................
-    hl      = tide_event[ 'hl' ]
-    height  = tide_event[ 'height' ]
-    dots.push [ hl, [ height, dots.length, ], ]
-    #.......................................................................................................
-    switch hl
-      when 'h'
-        x_position = '35mm'
-      when 'l'
-        x_position = '50mm'
-      else
-        throw new Error "expected `h` or `l` for hl indicator, got #{rpr hl}"
-    #.......................................................................................................
-    ### TAINT use proper escaping ###
-    dst       = if tide_event[ 'is-dst' ] then '+' else ''
-    time_txt  = date.format "HH[#{thinspace}]:[#{thinspace}]mm"
-    echo """\\paRight{#{x_position}}{#{y_position}}{#{time_txt}}"""
+    echo postscript
+  #---------------------------------------------------------------------------------------------------------
+  return null
 
 
 
@@ -202,8 +241,8 @@ unless module.parent?
   @main()
   # debug TIDES[ 'options' ]
   # debug TIDES[ 'options' ][ 'values' ][ 'moon' ][ 0 ]
-  # debug ( TIDES.options.get '/values/moon' )[ 0 ]
-  # debug TIDES.options.get '/values/moon/0'
+  # debug ( FI.get TIDES.options, '/values/moon' )[ 0 ]
+  # debug FI.get TIDES.options, '/values/moon/0'
   # FI = require 'coffeenode-fillin'
   # fill_in = FI.new_method()
-  # debug TIDES.options.get fill_in '/values/moon/$quarter', quarter: 0
+  # debug FI.get TIDES.options, fill_in '/values/moon/$quarter', quarter: 0

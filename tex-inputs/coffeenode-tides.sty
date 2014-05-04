@@ -23,23 +23,43 @@
 
 
 \usepackage{cxltx-style-base}                % you always want this one
-% \usepackage{cxltx-styles-cjk}                 % Chinese / Japanese / Korean
-% \usepackage{cxltx-styles-accentbox}           % boxed accents as per http://www.eutypon.gr/eutypon/pdf/e2000-05/e05-a04.pdf
-% \usepackage{cxltx-styles-smashbox}            % boxed contents to preserve lineheights
-% \usepackage{cxltx-styles-multimulti}          % multiple columns and rows on pages and in tables
+% \usepackage{cxltx-style-cjk}                 % Chinese / Japanese / Korean
+% \usepackage{cxltx-style-accentbox}           % boxed accents as per http://www.eutypon.gr/eutypon/pdf/e2000-05/e05-a04.pdf
+% \usepackage{cxltx-style-smashbox}            % boxed contents to preserve lineheights
+% \usepackage{cxltx-style-multimulti}          % multiple columns and rows on pages and in tables
 
 \usepackage{cxltx-style-trm}                  % terminal colors
 \usepackage{cxltx-style-position-absolute}    % absolute textpositioning
+\usepackage{leading}
+\usepackage{relsize}
+
 % \usepackage[top-left]{pagegrid}
 % \paShow
 \paOriginToText
 \paGaugeSample
 
+% ==========================================================================================================
+%
+% ----------------------------------------------------------------------------------------------------------
+% \newfontfamily\texturaFont[Scale=0.8,AutoFakeBold=0]{ALOT Gutenberg A}
+% \newfontfamily\texturaFont[Scale=0.8]{Schwabacher}
+\newfontfamily\texturaFont[Scale=0.8]{Walbaum-Fraktur}
+\newfontfamily\latinInitialsFont[Scale=1]{EB Garamond 12 Regular}
+% \newfontfamily\initialsFont[Scale=1]{Rothenburg Decorative}
+\newfontfamily\texturaInitialsFont[Scale=1]{Rothenburg Decorative}
+\newfontfamily\ornamentsFont[Scale=1]{Hoefler Text Ornaments}
+
+\newcommand{\redTexturaInitial}[1]{%
+  {\color{DarkRed}\texturaInitialsFont #1}%
+  }
 
 % ==========================================================================================================
-% TIDES
+% MOON SYMBOLS
 % ----------------------------------------------------------------------------------------------------------
-\usepackage{wasysym} % provides moon symbols etc
+\newfontfamily\moonFont[Scale=0.8,AutoFakeBold=1]{jizura2}
+% ..........................................................................................................
+\usepackage{wasysym} % alternative moon symbols for style 'plain'
+
 
 
 

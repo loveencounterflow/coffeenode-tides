@@ -14,8 +14,10 @@ settings =
     weekdays:   'abbreviated'
     # months:     'abbreviated'
     months:     'full'
-    moon:       'plain'
-    # moon:       'unicode'
+    moon:
+      quarters:     'jzr'
+      declination:  'jzr'
+      distance:     'jzr'
     layout:     'plain'
 
 ############################################################################################################
@@ -23,17 +25,25 @@ values =
   #.........................................................................................................
   # weekdays:   '${/data/translations/${/settings/language}/weekdays/${/settings/styles/weekdays}}'
   # months:     '${/data/translations/${/settings/language}/months/${/settings/styles/months}}'
-  moon:       '${/data/moon/${/settings/styles/moon}}'
+  moon:
+    quarters:     '${/data/moon/quarters/${/settings/styles/moon/quarters}}'
+    declination:  '${/data/moon/declination/${/settings/styles/moon/declination}}'
+    distance:     '${/data/moon/distance/${/settings/styles/moon/distance}}'
   layout:     '${/data/layouts/${/settings/styles/layout}}'
 
 #-----------------------------------------------------------------------------------------------------------
 data =
   #.........................................................................................................
-  tides:
-    'min-l-height': null
-    'max-l-height': null
-    'min-h-height': null
-    'max-h-height': null
+  extrema:
+    tides:
+      'min-l-height': null
+      'max-l-height': null
+      'min-h-height': null
+      'max-h-height': null
+    # moon:
+    #   quarters:       null
+    #   declination:    null
+    #   distance:       null
   #.........................................................................................................
   date:
     timezone:     'Europe/Amsterdam'
@@ -45,13 +55,27 @@ data =
       'EK':       1
       'VM':       2
       'LK':       3
-    unicode:
-      [ '⬤', '◐', '◯', '◑', ]
-    plain:    [
-      '\\newmoon'
-      '\\rightmoon'
-      '\\fullmoon'
-      '\\leftmoon' ]
+    quarters:
+      unicode:
+        [ '⬤', '◐', '◯', '◑', ]
+      plain:    [
+        '\\newmoon'
+        '\\rightmoon'
+        '\\fullmoon'
+        '\\leftmoon' ]
+      jzr:    [
+        '{\\moonFont{}^^^^e024}'
+        '{\\moonFont{}^^^^e026}'
+        '{\\moonFont{}^^^^e023}'
+        '{\\moonFont{}^^^^e027}' ]
+    distance:
+      jzr:
+        A:  '{\\moonFont{}^^^^e065}'
+        P:  '{\\moonFont{}^^^^e064}'
+    declination:
+      jzr:
+        N:  '{\\moonFont{}^^^^e063}'
+        S:  '{\\moonFont{}^^^^e062}'
   #.........................................................................................................
   xxx:
     'AUKFPFM':      'Aukfield platform'
@@ -203,30 +227,6 @@ data =
             y:        0
 
 
-#===========================================================================================================
-# GETTERS
-#-----------------------------------------------------------------------------------------------------------
-get = ( locator_or_crumbs, fallback ) ->
-  return FI.get O, locator_or_crumbs, fallback
-
-# #-----------------------------------------------------------------------------------------------------------
-# get.moon_symbol_from_quarter = ( moon_quarter ) ->
-#   locator = '/values/moon'
-#   R       = O.get FI.get O, locator
-#   return R[ moon_quarter ]
-
-# #-----------------------------------------------------------------------------------------------------------
-# get.weekday_from_idx = ( weekday_idx ) ->
-#   locator = '/values/weekdays'
-#   R       = O.get FI.get O, locator
-#   return R[ weekday_idx ]
-
-# #-----------------------------------------------------------------------------------------------------------
-# get.month_from_idx = ( month_idx ) ->
-#   locator = '/values/months'
-#   R       = O.get FI.get O, locator
-#   return R[ month_idx ]
-
 
 ############################################################################################################
 FI                        = require 'coffeenode-fillin'
@@ -237,7 +237,6 @@ misfit                    = {}
 O[ 'settings' ] = settings
 O[ 'values'   ] = values
 O[ 'data'     ] = data
-O[ 'get'      ] = get
 
 FI.fill_in O
 
