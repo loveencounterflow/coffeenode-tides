@@ -131,6 +131,7 @@ thinspace                 = '\u2009'
 #-----------------------------------------------------------------------------------------------------------
 @main = ->
   ### TAINT must parametrize data source ###
+  # route         = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
   route         = njs_path.join __dirname, '../tidal-data/Yerseke.txt'
   # route         = njs_path.join __dirname, '../tidal-data/Harlingen-2014-hl.txt'
   rows          = TEX.new_container []
@@ -174,7 +175,7 @@ thinspace                 = '\u2009'
         #---------------------------------------------------------------------------------------------------
         do ( page_nr, dots ) =>
           #-------------------------------------------------------------------------------------------------
-          if page_nr < 8 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          if page_nr < 80 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ### TAINT asynchronous handling is missing ###
             info "drawing image #{page_nr}"
             route = njs_path.join '/tmp', "tides-p#{page_nr}.png"
@@ -186,6 +187,11 @@ thinspace                 = '\u2009'
         #---------------------------------------------------------------------------------------------------
         dots      = []
         echo """\\null\\newpage"""
+      #.....................................................................................................
+      ### TAINT parametrize ###
+      if ( date.isBefore '2014-06-13' ) or ( date.isAfter '2014-08-10 17:00' )
+        # whisper "skipping #{date.toString()}"
+        continue
       #.....................................................................................................
       ### TAINT measurements should be defined in options ###
       textheight  = 178 # mm
@@ -209,7 +215,7 @@ thinspace                 = '\u2009'
         day_txt   = date.format 'DD'
         echo """\\paRight{20mm}{#{y_position}}{#{month_txt}-#{day_txt}}"""
       #.....................................................................................................
-      unless last_month is this_month
+      unless last_month is this_month # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         last_month = this_month
         echo """\\typeout{\\trmSolCyan{#{date.format 'YYYY-MM-DD'}}}"""
       #.....................................................................................................
