@@ -20,6 +20,18 @@
   paperwidth=148mm,
   paperheight=210mm]{geometry}
 
+\newcommand{\placename}{UNKNOWN}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead[LO,RE]{\placename}
+\fancyhead[LE,RO]{\textcolor{DarkRed}{\large\scFont\rightmark}}
+\fancyfoot[LE,RO]{}
+\fancyfoot[C]{}
+\fancyfoot[LO,RE]{\thepage}
+\fancyfoot[LE,RO]{\textcolor{DarkRed}{\large\scFont\leftmark}}
+\renewcommand{\headrulewidth}{0.14mm}
+\renewcommand{\footrulewidth}{0.14mm}
+\setlength\headheight{6mm}
 
 
 \usepackage{cxltx-style-base}                % you always want this one

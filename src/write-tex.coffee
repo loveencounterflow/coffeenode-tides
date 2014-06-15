@@ -64,17 +64,24 @@ thinspace                 = '\u2009'
 
 
 #-----------------------------------------------------------------------------------------------------------
-@format_month_name = ( date ) ->
+@format_month_name = ( page_nr, date ) ->
   ### TAINT make formats configurable ###
-  month_name = date.format 'MMMM'
-  month_name = month_name[ 0 ].toUpperCase() + month_name[ 1 .. ]
+  month_name    = date.format 'MMMM'
+  month_name    = month_name[ 0 ].toUpperCase() + month_name[ 1 .. ]
   #.........................................................................................................
   # echo """\\paTopLeft*{0mm}{0mm}{\\includegraphics[width=118mm]{#{route}}}"""
   ### TAINT inefficient to retrieve each time; options should use cache ###
-  align_x     = FI.get TIDES.options, '/values/layout/month/odd/align/x'
-  align_y     = FI.get TIDES.options, '/values/layout/month/odd/align/y'
-  position_x  = ( FI.get TIDES.options, '/values/layout/month/odd/position/x' ) + 'mm'
-  position_y  = ( FI.get TIDES.options, '/values/layout/month/odd/position/y' ) + 'mm'
+  is_even_page  = page_nr %% 2 is 0
+  if is_even_page
+    align_x       = FI.get TIDES.options, '/values/layout/month/even/align/x'
+    align_y       = FI.get TIDES.options, '/values/layout/month/even/align/y'
+    position_x    = ( FI.get TIDES.options, '/values/layout/month/even/position/x' ) + 'mm'
+    position_y    = ( FI.get TIDES.options, '/values/layout/month/even/position/y' ) + 'mm'
+  else
+    align_x       = FI.get TIDES.options, '/values/layout/month/odd/align/x'
+    align_y       = FI.get TIDES.options, '/values/layout/month/odd/align/y'
+    position_x    = ( FI.get TIDES.options, '/values/layout/month/odd/position/x' ) + 'mm'
+    position_y    = ( FI.get TIDES.options, '/values/layout/month/odd/position/y' ) + 'mm'
   #.........................................................................................................
   switch alignment = align_x
     when 'left'   then pa_command = paLeftGauge
@@ -87,7 +94,10 @@ thinspace                 = '\u2009'
     TEX.new_loner 'large'
     TEX.new_command 'color', 'DarkRed'
     month_name ]
-  return pa_command [ position_x, position_y, content, ]
+  chapter_mark = TEX.new_multicommand 'markboth', 2, [ month_name, month_name, ]
+  return [
+    pa_command [ position_x, position_y, content, ]
+    chapter_mark ]
 
 #-----------------------------------------------------------------------------------------------------------
 @draw_curves = ( page_nr, dots, handler ) ->
@@ -128,22 +138,38 @@ thinspace                 = '\u2009'
   declination_deg = event[ 'details' ][ 'declination.deg' ]
   return [ sn, sn_symbol, declination_deg, ]
 
+
+#-----------------------------------------------------------------------------------------------------------
+@_add_dots_day_entry = ( dots, row_idx, day, hl ) ->
+  dots[ 'days' ].push { row_idx: row_idx, day: day, hl: hl, }
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@_new_dots = ->
+  R           = []
+  R[ 'days' ] = []
+  return R
+
 #-----------------------------------------------------------------------------------------------------------
 @main = ->
   ### TAINT must parametrize data source ###
-  # route         = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
-  route         = njs_path.join __dirname, '../tidal-data/Yerseke.txt'
+  # route         = njs_path.join __dirname, '../tidal-data/Schiermonnikoog-2014-hl.txt'
+  route         = njs_path.join __dirname, '../tidal-data/Vlieland-haven.txt'
+  # route         = njs_path.join __dirname, '../tidal-data/Yerseke.txt'
   # route         = njs_path.join __dirname, '../tidal-data/Harlingen-2014-hl.txt'
   rows          = TEX.new_container []
   row_idx       = -1
-  dots          = []
+  dots          = @_new_dots()
   page_nr       = 0
   last_day      = null
   last_month    = null
   last_year     = null
   moon_quarter  = null
   wrote_header  = no
+  # wrote_footer  = no
   echo preamble
+  echo """\\renewcommand{\\placename}{Schiermonnikoog}"""
+  echo """\\renewcommand{\\placename}{Vlieland (Haven)}"""
   #---------------------------------------------------------------------------------------------------------
   TIDES.read_aligned_events route, ( error, event_batches ) =>
     throw error if error?
@@ -164,9 +190,11 @@ thinspace                 = '\u2009'
       this_month    = date.month()
       #.....................................................................................................
       unless wrote_header
-        this_month_tex = @format_month_name date
-        echo TEX.rpr this_month_tex
+        [ this_month_tex, chapter_mark ] = @format_month_name page_nr, date
+        # echo TEX.rpr this_month_tex
+        echo TEX.rpr chapter_mark
         wrote_header = yes
+        # whisper TEX.rpr this_month_tex
       #.....................................................................................................
       if moon_quarter is 0 or moon_quarter is 2
         ### TAINT collect these in a 'newpage' function ###
@@ -185,13 +213,19 @@ thinspace                 = '\u2009'
               info "image #{page_nr} ok"
               throw error if error?
         #---------------------------------------------------------------------------------------------------
-        dots      = []
+        [ this_month_tex, chapter_mark ] = @format_month_name page_nr, date
+        # echo TEX.rpr this_month_tex
+        echo TEX.rpr chapter_mark
+        dots      = @_new_dots()
+        delete dots[ 'month-change-at-row-idx' ] # obsolete
+        delete dots[ 'month-change-at-hl' ] # obsolete
         echo """\\null\\newpage"""
+        wrote_header = no
       #.....................................................................................................
       ### TAINT parametrize ###
-      if ( date.isBefore '2014-06-13' ) or ( date.isAfter '2014-08-10 17:00' )
-        # whisper "skipping #{date.toString()}"
-        continue
+      # if ( date.isBefore '2014-06-13' ) or ( date.isAfter '2014-08-10 17:00' )
+      #   # whisper "skipping #{date.toString()}"
+      #   continue
       #.....................................................................................................
       ### TAINT measurements should be defined in options ###
       textheight  = 178 # mm
@@ -201,40 +235,53 @@ thinspace                 = '\u2009'
       y_position  = @_y_position_from_row_idx row_idx, module, unit
       #.....................................................................................................
       ### TAINT take horizontal positions from options ###
-      if moon_symbol?
-        echo """\\paRight{10mm}{#{y_position}}{#{moon_symbol}}"""
-      if ap?
-        echo """\\paRight{6mm}{#{y_position}}{#{ap_symbol}}"""
-      if sn?
-        echo """\\paRight{2mm}{#{y_position}}{#{sn_symbol}}"""
-      #.....................................................................................................
-      unless last_day is this_day
-        last_day  = this_day
-        ### TAINT days y to be adjusted ###
-        month_txt = date.format 'MM'
-        day_txt   = date.format 'DD'
-        echo """\\paRight{20mm}{#{y_position}}{#{month_txt}-#{day_txt}}"""
-      #.....................................................................................................
-      unless last_month is this_month # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        last_month = this_month
-        echo """\\typeout{\\trmSolCyan{#{date.format 'YYYY-MM-DD'}}}"""
+      symbols     = []
+      symbols.push sn_symbol    if sn?
+      symbols.push ap_symbol    if ap?
+      symbols.push moon_symbol  if moon_symbol?
+      if symbols.length > 0
+        # symbols = ( symbols.join '\\\\' ) + '\\par'
+        symbols = symbols.join ''
+        echo """\\paLeftGauge{0.5mm}{#{y_position}}{#{symbols}}"""
       #.....................................................................................................
       hl      = tidal_event[ 'hl' ]
+      #.....................................................................................................
+      unless last_day is this_day
+        last_day    = this_day
+        month_txt   = date.format 'MM'
+        day_txt     = date.format 'DD'
+        weekday_txt = ( date.format 'dd' ).toLowerCase()
+        color       = switch date.day()
+          # when 6 then FI.get TIDES.options, '/values/colors/blue'   # Saturday
+          when 0 then FI.get TIDES.options, '/values/colors/red'    # Sunday
+          else        FI.get TIDES.options, '/values/colors/black'  # weekdays
+        echo """\\paLeftGauge{10.5mm}{#{y_position}}{\\textcolor[HTML]{#{color}}{\\itFont{}#{weekday_txt}}}"""
+        echo """\\paRightGauge{22.5mm}{#{y_position}}{\\textcolor[HTML]{#{color}}{\\large{} #{day_txt}.}}"""
+        @_add_dots_day_entry dots, row_idx, this_day, hl
+      #.....................................................................................................
+      unless last_month is this_month # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        dots[ 'month-change-at-row-idx' ] = row_idx # obsolete
+        dots[ 'month-change-at-hl'      ] = hl # obsolete
+        last_month = this_month
+        echo """\\typeout{\\trmSolCyan{#{date.format 'YYYY-MM-DD'}}}"""
+        echo """\\typeout{\\trmSolCyan{#{date.format 'MMM'}}}"""
+      #.....................................................................................................
       height  = tidal_event[ 'height' ]
       dots.push [ hl, [ height, dots.length, ], ]
       #.....................................................................................................
       switch hl
         when 'h'
-          x_position = '35mm'
+          x_position = '34mm'
         when 'l'
-          x_position = '50mm'
+          x_position = '46mm'
         else
           throw new Error "expected `h` or `l` for hl indicator, got #{rpr hl}"
       #.....................................................................................................
       ### TAINT use proper escaping ###
       dst       = if tidal_event[ 'is-dst' ] then '+' else ''
       time_txt  = date.format "HH[#{thinspace}]:[#{thinspace}]mm"
-      echo """\\paRight{#{x_position}}{#{y_position}}{#{time_txt}}"""
+      echo """\\paRightGauge{#{x_position}}{#{y_position}}{#{time_txt}}"""
+      #                ^^^^^
     #.......................................................................................................
     echo postscript
   #---------------------------------------------------------------------------------------------------------

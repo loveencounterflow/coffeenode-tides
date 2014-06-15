@@ -26,7 +26,14 @@
       declination: '${/data/moon/declination/${/settings/styles/moon/declination}}',
       distance: '${/data/moon/distance/${/settings/styles/moon/distance}}'
     },
-    layout: '${/data/layouts/${/settings/styles/layout}}'
+    layout: '${/data/layouts/${/settings/styles/layout}}',
+
+    /* colors to be given as 6 hex digits ('HTML' or 'CSS' notation, without the leading `#`) */
+    colors: {
+      'red': '86000b',
+      'blue': '21247b',
+      'black': '000000'
+    }
   };
 
   data = {
@@ -161,7 +168,7 @@
       plain: {
         margins: {
           outer: 10,
-          top: 12
+          top: 0
         },
         month: {
           even: {

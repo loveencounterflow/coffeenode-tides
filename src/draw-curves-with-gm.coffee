@@ -22,6 +22,7 @@ echo                      = TRM.echo.bind TRM
 TIDES                     = require './main'
 GM                        = require 'gm'
 FI                        = require 'coffeenode-fillin'
+WRITE_TEX                 = require './write-tex'
 
 ### TAINT must go into TIDES/options ###
 options =
@@ -104,6 +105,9 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
   bezier_l_dots       = []
   bezier_h_points     = []
   bezier_l_points     = []
+  blue                = '#' + FI.get TIDES.options, '/values/colors/blue'
+  red                 = '#' + FI.get TIDES.options, '/values/colors/red'
+  black               = '#' + FI.get TIDES.options, '/values/colors/black'
   #.........................................................................................................
   dots                = @_dots_mm_from_raw_dots raw_dots
   bezier_hl_points    = @_get_hl_points_from_dots dots
@@ -120,21 +124,33 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
   image = GM options[ 'width.px' ], options[ 'height.px' ], "#ffffffff"
     .fontSize 68
     .fill 'transparent'
-    .stroke 'black', 2
+    .stroke black, 2
+  #.........................................................................................................
+  ### draw left verticals ###
+  x0 = x1 = @_image_px_from_origin_mm 0
+  y0 = @_image_px_from_y_raw  0
+  y1 = @_image_px_from_y_raw 60
+  image
+    .stroke black, 1
+    .drawLine x0, y0, x1, y1
+  x0 = x1 = @_image_px_from_origin_mm 10
+  image
+    .stroke black, 1
+    .drawLine x0, y0, x1, y1
   #.........................................................................................................
   # ### draw LAT vertical ###
   # x0 = x1 = @_image_px_from_real_cm 0
   # y0 = @_image_px_from_y_raw  0
   # y1 = @_image_px_from_y_raw 60
   # image
-  #   .stroke 'black', 1
+  #   .stroke black, 1
   #   .drawLine x0, y0, x1, y1
   #.........................................................................................................
   ### draw ( min, max ) ( h, l ) verticals ###
   ### TAINT make configurable ###
   names_and_colors = [
-    [ [ 'min-l-height', 'max-l-height', ], 'red'  ]
-    [ [ 'min-h-height', 'max-h-height', ], 'blue' ]
+    [ [ 'min-l-height', 'max-l-height', ], red  ]
+    [ [ 'min-h-height', 'max-h-height', ], blue ]
     ]
   for [ names, color, ] in names_and_colors
     for name in names
@@ -142,22 +158,22 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
       y0 = @_image_px_from_y_raw  0
       y1 = @_image_px_from_y_raw 60
       image
-        .stroke color, 1
+        .stroke color, 2
         .drawLine x0, y0, x1, y1
   #.........................................................................................................
   ### draw NAP vertical ###
   ### TAINT must get NAP - LAT difference from RWS for each location ###
-  x0 = x1 = @_image_px_from_real_cm 0 + 203
-  y0 = @_image_px_from_y_raw  0
-  y1 = @_image_px_from_y_raw 60
-  image
-    .stroke 'black', 1
-    .drawLine x0, y0, x1, y1
+  # x0 = x1 = @_image_px_from_real_cm 0 + 203
+  # y0 = @_image_px_from_y_raw  0
+  # y1 = @_image_px_from_y_raw 60
+  # image
+  #   .stroke black, 1
+  #   .drawLine x0, y0, x1, y1
   #.........................................................................................................
   last_idx = bezier_hl_points.length - 1
   for [ hl, points, ], idx in bezier_hl_points
     image
-      .stroke 'black', 4
+      .stroke black, 4
       .drawBezier points...
     ### draw HL horizontal ###
     if idx is 0
@@ -165,24 +181,55 @@ module.exports = @_draw_curves_with_gm = ( route, raw_dots, handler ) ->
     else
       x0 = points[ 0 ][ 0 ]
     ### TAINT these numbers also in `write-tex`; save in options ###
-    x1 = @_image_px_from_origin_mm ( if hl is 'h' then 35 else 50 ) + 1
+    x1 = @_image_px_from_origin_mm ( if hl is 'h' then 34 else 46 ) + 1
     y0 = y1 = points[ 0 ][ 1 ]
     image
-      .stroke 'black', 1
+      .stroke black, 1
       .drawLine x0, y0, x1, y1
     if idx is last_idx
       hl3 = if hl is 'h' then 'l' else 'h'
       x0  = points[ 3 ][ 0 ]
-      x1  = @_image_px_from_origin_mm ( if hl3 is 'h' then 35 else 50 ) + 1
+      x1  = @_image_px_from_origin_mm ( if hl3 is 'h' then 34 else 46 ) + 1
       y0  = y1 = points[ 3 ][ 1 ]
       image
-        .stroke 'black', 1
+        .stroke black, 1
+        .drawLine x0, y0, x1, y1
+  #.........................................................................................................
+  for { row_idx, day, hl, } in raw_dots[ 'days' ]
+    x0 = @_image_px_from_origin_mm 10
+    if hl is 'h'
+      x1 = @_image_px_from_origin_mm 35
+    else
+      x1 = @_image_px_from_origin_mm 23
+    y0    = y1 = @_image_px_from_y_raw row_idx - 1
+    color = if day is 1 then red else black
+    image
+      .stroke color
+      .drawLine x0, y0, x1, y1
+    x0  = x1
+    y0  = y1
+    y1 += @_image_px_from_y_raw 0.27
+    image
+      .stroke color
+      .drawLine x0, y0, x1, y1
+    if hl is 'l'
+      x0  = x1
+      y0  = y1
+      x1  = @_image_px_from_origin_mm 35
+      image
+        .stroke color
+        .drawLine x0, y0, x1, y1
+      x0  = x1
+      y0  = y1
+      y1 -= @_image_px_from_y_raw 0.27
+      image
+        .stroke color
         .drawLine x0, y0, x1, y1
   #.........................................................................................................
   for collection in [ bezier_h_points, bezier_l_points, ]
     for [ hl, points, ], idx in collection
       image
-        .stroke 'black', 1
+        .stroke black, 1
         .drawBezier points...
   #.........................................................................................................
   image.write route, ( error ) ->
